@@ -1,0 +1,44 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Віртуальні середовища
+.venv/
+venv/
+env/
+ENV/
+
+# Локальні змінні середовища та секрети
+.env
+.env.*
+
+# Інструменти контролю версій Python (як ми обговорювали)
+.python-version
+
+# Django
+*/*.sqlite3
+*/db.sqlite3
+media/
+# static/ (розкоментуйте, якщо хочете ігнорувати локальну статику, а збирати її лише всередині контейнера)
+
+# IDE та редактори коду
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Кеш тестування та покриття
+.tox/
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Системні файли ОС
+.DS_Store
+Thumbs.db

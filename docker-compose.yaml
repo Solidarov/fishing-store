@@ -1,0 +1,26 @@
+services:
+  db:
+    image: postgres:15
+    container_name: postgres_db
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  fishing_store:
+    image: fishing_store
+    build: 
+      context: .
+      dockerfile: Dockerfile.dj
+    container_name: fishing_store
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    env_file:
+      - .env
+
+
+volumes:
+  db_data:
