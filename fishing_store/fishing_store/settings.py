@@ -78,11 +78,10 @@ DATABASES = {
         "NAME": os.environ.get("DB_NAME", "fishing_db"),
         "USER": os.environ.get("DB_USER", "myuser"),
         "PASSWORD": os.environ.get("DB_PASSWORD", "mypassword"),
-        "HOST": os.environ.get("DB_HOST", "db"),
+        "HOST": os.environ.get("DB_HOST", "localhost"),
         "PORT": "5432",
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators

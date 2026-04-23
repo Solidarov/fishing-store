@@ -7,6 +7,8 @@ services:
       - .env
     volumes:
       - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
 
   fishing_store:
     image: fishing_store
