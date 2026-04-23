@@ -24,7 +24,7 @@ docker volume create db_data
 
 5. Run container
 ```bash
-docker compose up --build
+cd fishing-store && docker compose up --build
 ```
 
 6. The app will be available in the browser under the `http:/localhost:8000/` address
