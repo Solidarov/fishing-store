@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:15
+    build: ./database
     container_name: postgres_db
     restart: always
     env_file:
@@ -27,3 +27,4 @@ services:
 
 volumes:
   db_data:
+    external: true
