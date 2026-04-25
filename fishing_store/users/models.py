@@ -4,7 +4,7 @@ from django.contrib.auth.models import AbstractUser
 
 class CustomUser(AbstractUser):
     """
-    Кастомна модель користувача для рибацького магазину.
+    Кастомна модель користувача
     """
 
     class Role(models.TextChoices):
@@ -18,12 +18,6 @@ class CustomUser(AbstractUser):
         default=Role.CUSTOMER,
         verbose_name="Роль користувача",
     )
-
-    phone_number = models.CharField(
-        max_length=20, blank=True, null=True, verbose_name="Номер телефону"
-    )
-
-    address = models.TextField(blank=True, null=True, verbose_name="Адреса доставки")
 
     @property
     def is_admin_member(self):
@@ -51,3 +45,88 @@ class CustomUser(AbstractUser):
         у терміналі / Django admin dashboard
         """
         return f"{self.username} ({self.get_role_display()})"
+
+
+class BaseProfile(models.Model):
+    """
+    Базова модель профілю користувача.
+    Додає базові поля до всіх моделей, що її наслідують
+    """
+
+    phone_number = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True,
+        verbose_name="Номер телефону",
+    )
+    region = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        verbose_name="Область",
+    )
+    city = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        verbose_name="Місто",
+    )
+    street = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        verbose_name="Назва вулиці",
+    )
+    house_num = models.PositiveSmallIntegerField(
+        blank=True,
+        null=True,
+        verbose_name="Номер будинку",
+    )
+    flat_num = models.PositiveSmallIntegerField(
+        blank=True,
+        null=True,
+        verbose_name="Номер квартири",
+    )
+    postal_code = models.CharField(
+        max_length=25,
+        blank=True,
+        null=True,
+        verbose_name="Поштовий індекс",
+    )
+
+    class Meta:
+        abstract = True
+
+
+class CustomerProfile(BaseProfile):
+    """
+    Профіль покупця. Наслідує поля базового профілю
+    """
+
+    user = models.OneToOneField(
+        CustomUser,
+        on_delete=models.CASCADE,
+        related_name="customer_profile",
+    )
+
+    def __str__(self):
+        return f"Покупець: {self.user.username}"
+
+
+class SellerProfile(BaseProfile):
+    """
+    Профіль продавця. Наслідує поля базового профілю
+    """
+
+    user = models.OneToOneField(
+        CustomUser,
+        on_delete=models.CASCADE,
+        related_name="seller_profile",
+    )
+    store_name = models.CharField(
+        max_length=100,
+        blank=True,
+    )
+
+    def __str__(self):
+        return f"Продавець: {self.user.username}"
