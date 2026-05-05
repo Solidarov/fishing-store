@@ -7,10 +7,9 @@ from users.models import CustomUser, CustomerProfile, SellerProfile
 @receiver(post_save, sender=CustomUser)
 def create_user_profile(sender, instance, created, **kwargs):
     """
-    Автоматичне створення профілів для продавця та користувача
+    Автоматичне створення або перевірка наявності профілю при кожному збереженні.
     """
-    if created:
-        if instance.role == CustomUser.Role.CUSTOMER:
-            CustomerProfile.objects.create(user=instance)
-        elif instance.role == CustomUser.Role.SELLER:
-            SellerProfile.objects.create(user=instance)
+    if instance.role == CustomUser.Role.CUSTOMER:
+        CustomerProfile.objects.get_or_create(user=instance)
+    elif instance.role == CustomUser.Role.SELLER:
+        SellerProfile.objects.get_or_create(user=instance)
