@@ -11,6 +11,18 @@ class CustomUserCreationForm(UserCreationForm):
     class Meta(UserCreationForm.Meta):
         model = CustomUser
         fields = ("username", "email", "role")
+        widgets = {
+            "role": forms.RadioSelect(),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Виключаємо роль ADMIN та робимо вибір обов'язковим
+        self.fields["role"].choices = [
+            (choice_value, choice_label)
+            for choice_value, choice_label in CustomUser.Role.choices
+            if choice_value != CustomUser.Role.ADMIN
+        ]
 
     def save(self, commit=True):
         user = super().save(commit=False)
