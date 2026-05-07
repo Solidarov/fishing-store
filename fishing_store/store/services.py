@@ -1,0 +1,62 @@
+from django.db import transaction
+from .models import Product, StockAlert
+
+
+class ProductService:
+    """
+    Сервісний шар для бізнес логіки пов'язаної з продуктами
+
+    Забезпечує Single Responsibility Principle тим,
+    що відділяє логіку та операції з БД від views
+    """
+
+    @staticmethod
+    def get_all_products():
+        """Повертає всі продукти відсортовані за датою створення"""
+        return Product.objects.all().order_by("-created_at")
+
+    @staticmethod
+    def get_product_by_id(product_id):
+        """Отримує специфічний товар або об'єкт його підкласу (напр, вудка або котушка)"""
+        try:
+            product = Product.objects.get(id=product_id)
+            # Django MTI: спробуємо повернути найбільш конкретний екземпляр
+            if hasattr(product, "fishingrod"):
+                return product.fishingrod
+            if hasattr(product, "reel"):
+                return product.reel
+            return product
+        except Product.DoesNotExist:
+            return None
+
+    @staticmethod
+    def check_and_create_stock_alert(product):
+        """
+        Логіка для перевірки чи товару на складі не замало та створити повідомлення
+
+        Використовується для Observer (Signals)
+        """
+        if product.is_low_stock():
+            # Створити сповіщення тільки якщо не існує активного запису для цієї кількості товару
+            # щоб не спамити логами після кожного маленького оновлення
+            last_alert = StockAlert.objects.filter(
+                product=product, status="NEW"
+            ).first()
+            if not last_alert or last_alert.current_stock != product.stock:
+                StockAlert.objects.create(
+                    product=product,
+                    current_stock=product.stock,
+                    threshold=product.low_stock_threshold,
+                )
+
+    @staticmethod
+    def resolve_alert(alert_id):
+        """Відмічає повідомлення про низьку кількість товару як зроблене"""
+        alert = StockAlert.objects.get(id=alert_id)
+        alert.status = "RESOLVED"
+        alert.save()
+
+    @staticmethod
+    def get_active_alerts():
+        """Повертає всі активні логи про критично низьку кількість товару"""
+        return StockAlert.objects.filter(status="NEW").select_related("product")

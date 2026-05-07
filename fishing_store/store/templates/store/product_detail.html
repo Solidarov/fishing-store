@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section>
+    <article>
+        <header>
+            <h1>{{ product.name }}</h1>
+            <p><strong>Category:</strong> 
+                {% if product.fishingrod %}Fishing Rod
+                {% elif product.reel %}Reel
+                {% else %}General Equipment{% endif %}
+            </p>
+        </header>
+
+        {% if product.image %}
+            <img src="{{ product.image.url }}" alt="{{ product.name }}">
+        {% endif %}
+
+        <p>{{ product.description }}</p>
+
+        <section>
+            <h3>Specifications</h3>
+            <ul>
+                <li><strong>Price:</strong> ${{ product.price }}</li>
+                <li><strong>Availability:</strong> 
+                    {% if product.stock > 0 %}{{ product.stock }} units in stock{% else %}Out of Stock{% endif %}
+                </li>
+
+                {# Polymorphic Fields #}
+                {% if product.fishingrod %}
+                    <li><strong>Length:</strong> {{ product.fishingrod.length }} m</li>
+                    <li><strong>Test:</strong> {{ product.fishingrod.test_min }}g - {{ product.fishingrod.test_max }}g</li>
+                    <li><strong>Material:</strong> {{ product.fishingrod.material }}</li>
+                {% elif product.reel %}
+                    <li><strong>Spool Size:</strong> {{ product.reel.spool_size }}</li>
+                    <li><strong>Gear Ratio:</strong> {{ product.reel.gear_ratio }}</li>
+                    <li><strong>Bearings:</strong> {{ product.reel.bearings_count }}</li>
+                {% endif %}
+            </ul>
+        </section>
+
+        <footer>
+            {% if product.stock > 0 %}
+                <button>Add to Cart (Coming Soon)</button>
+            {% else %}
+                <button disabled>Out of Stock</button>
+            {% endif %}
+            <a href="{% url 'store:product_list' %}">Back to Catalog</a>
+        </footer>
+    </article>
+</section>
+{% endblock %}

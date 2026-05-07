@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section>
+    <header>
+        <h1>Seller Dashboard</h1>
+        <p>Welcome, {{ user.username }}. Here you can monitor your inventory and alerts.</p>
+    </header>
+
+    <section>
+        <h3>⚠️ Low Stock Alerts (Observer Pattern Log)</h3>
+        {% if alerts %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Current Stock</th>
+                        <th>Threshold</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for alert in alerts %}
+                        <tr>
+                            <td><a href="{% url 'store:product_detail' alert.product.id %}">{{ alert.product.name }}</a></td>
+                            <td><mark>{{ alert.current_stock }}</mark></td>
+                            <td>{{ alert.threshold }}</td>
+                            <td>{{ alert.created_at|date:"Y-m-d H:i" }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No active alerts. All stock levels are healthy.</p>
+        {% endif %}
+    </section>
+
+    <section>
+        <h3>📦 Inventory Overview</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Product Name</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                    <tr>
+                        <td>{{ product.name }}</td>
+                        <td>${{ product.price }}</td>
+                        <td>
+                            {% if product.stock <= product.low_stock_threshold %}
+                                <mark>{{ product.stock }}</mark>
+                            {% else %}
+                                {{ product.stock }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'store:product_detail' product.id %}">View</a> |
+                            <a href="/admin/store/product/{{ product.id }}/change/">Edit (Admin)</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+</section>
+{% endblock %}

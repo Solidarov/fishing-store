@@ -1,32 +1,49 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fishing Store</title>
+    <link rel="stylesheet" href="https://unpkg.com/mvp.css">
 </head>
 <body>
-    <nav>
-        {% if not user.is_authenticated %}
-        <a href="{% url 'login' %}">Login</a> |
-        <a href="{% url 'register' %}">Register</a> |
-        
-        {% else %}
-            <a href="{% url 'profile' %}">Profile</a> |
-            <form action="{% url 'logout' %}" method="post" style="display:inline;">
-                {% csrf_token %}
-                <button type="submit">Logout</button>
-            </form>
-        {% endif %}
-    </nav>
-    <hr>
-    
+    <header>
+        <nav>
+            <a href="{% url 'store:product_list' %}"><b>Fishing Store</b></a>
+            <ul>
+                <li><a href="{% url 'store:product_list' %}">Catalog</a></li>
+                {% if user.is_authenticated %}
+                    {% if user.role == 'SELLER' or user.role == 'ADMIN' %}
+                        <li><a href="{% url 'store:seller_dashboard' %}">Seller Dashboard</a></li>
+                    {% endif %}
+                    <li><a href="{% url 'profile' %}">Profile ({{ user.username }})</a></li>
+                    <li>
+                        <form action="{% url 'logout' %}" method="post" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit">Logout</button>
+                        </form>
+                    </li>
+                {% else %}
+                    <li><a href="{% url 'login' %}">Login</a></li>
+                    <li><a href="{% url 'register' %}">Register</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </header>
+    <main>
     {% if messages %}
-        <ul>
+        <section>
             {% for message in messages %}
-                <li>{{ message }}</li>
+                <aside>{{ message }}</aside>
             {% endfor %}
-        </ul>
+        </section>
     {% endif %}
 
     {% block content %}{% endblock %}
+    </main>
+    <footer>
+        <hr>
+        <p><small>&copy; 2026 Fishing Store MVP</small></p>
+    </footer>
 </body>
 </html>
