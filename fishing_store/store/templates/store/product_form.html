@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section>
+    <header>
+        <h2>{{ title }}</h2>
+    </header>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <footer>
+            <button type="submit">Зберегти</button>
+            <a href="{% url 'store:seller_dashboard' %}">Скасувати</a>
+        </footer>
+    </form>
+</section>
+{% endblock %}

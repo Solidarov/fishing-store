@@ -3,20 +3,34 @@
 {% block content %}
 <section>
     <header>
-        <h1>Seller Dashboard</h1>
-        <p>Welcome, {{ user.username }}. Here you can monitor your inventory and alerts.</p>
+        <h1>Панель продавця</h1>
+        <p>Вітаємо, {{ user.username }}. Тут ви можете керувати асортиментом та переглядати сповіщення.</p>
     </header>
 
     <section>
-        <h3>⚠️ Low Stock Alerts (Observer Pattern Log)</h3>
+        <header>
+            <h3>🛠 Керування товарами</h3>
+        </header>
+        <p>Додати новий товар: 
+            <a href="{% url 'store:product_add' %}?type=rod"><button>🎣 Вудлище</button></a>
+            <a href="{% url 'store:product_add' %}?type=reel"><button>⚙️ Котушку</button></a>
+            <a href="{% url 'store:product_add' %}"><button>📦 Інше</button></a>
+        </p>
+    </section>
+
+    <section>
+        <header>
+            <h3>⚠️ Сповіщення про низький запас (Observer Pattern)</h3>
+        </header>
         {% if alerts %}
             <table>
                 <thead>
                     <tr>
-                        <th>Product</th>
-                        <th>Current Stock</th>
-                        <th>Threshold</th>
-                        <th>Date</th>
+                        <th>Товар</th>
+                        <th>Поточний запас</th>
+                        <th>Поріг</th>
+                        <th>Дата</th>
+                        <th>Дія</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -26,24 +40,32 @@
                             <td><mark>{{ alert.current_stock }}</mark></td>
                             <td>{{ alert.threshold }}</td>
                             <td>{{ alert.created_at|date:"Y-m-d H:i" }}</td>
+                            <td>
+                                <form action="{% url 'store:alert_resolve' alert.id %}" method="post" style="display:inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="outline">Вирішено</button>
+                                </form>
+                            </td>
                         </tr>
                     {% endfor %}
                 </tbody>
             </table>
         {% else %}
-            <p>No active alerts. All stock levels are healthy.</p>
+            <p>Немає активних сповіщень. Всі запаси в нормі.</p>
         {% endif %}
     </section>
 
     <section>
-        <h3>📦 Inventory Overview</h3>
+        <header>
+            <h3>📦 Огляд інвентарю</h3>
+        </header>
         <table>
             <thead>
                 <tr>
-                    <th>Product Name</th>
-                    <th>Price</th>
-                    <th>Stock</th>
-                    <th>Actions</th>
+                    <th>Назва товару</th>
+                    <th>Ціна</th>
+                    <th>Запас</th>
+                    <th>Дії</th>
                 </tr>
             </thead>
             <tbody>
@@ -59,8 +81,9 @@
                             {% endif %}
                         </td>
                         <td>
-                            <a href="{% url 'store:product_detail' product.id %}">View</a> |
-                            <a href="/admin/store/product/{{ product.id }}/change/">Edit (Admin)</a>
+                            <a href="{% url 'store:product_detail' product.id %}">Перегляд</a> |
+                            <a href="{% url 'store:product_edit' product.id %}">Редагувати</a> |
+                            <a href="/admin/store/product/{{ product.id }}/change/">Admin</a>
                         </td>
                     </tr>
                 {% endfor %}

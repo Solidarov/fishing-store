@@ -48,13 +48,21 @@ class ProductService:
                     current_stock=product.stock,
                     threshold=product.low_stock_threshold,
                 )
+        else:
+            # Якщо запас достатній (> порогу), закриваємо всі нові сповіщення для цього товару
+            StockAlert.objects.filter(product=product, status="NEW").update(
+                status="RESOLVED"
+            )
 
     @staticmethod
     def resolve_alert(alert_id):
-        """Відмічає повідомлення про низьку кількість товару як зроблене"""
-        alert = StockAlert.objects.get(id=alert_id)
-        alert.status = "RESOLVED"
-        alert.save()
+        """Позначає конкретне сповіщення як вирішене (ручне керування)."""
+        alert = StockAlert.objects.filter(id=alert_id).first()
+        if alert:
+            alert.status = "RESOLVED"
+            alert.save()
+            return True
+        return False
 
     @staticmethod
     def get_active_alerts():

@@ -4,7 +4,7 @@ from .models import Product
 from .services import ProductService
 
 
-@receiver(post_save, sender=Product)
+@receiver(post_save)
 def product_stock_observer(sender, instance, **kwargs):
     """
     Імплементація патерну Observer
@@ -12,5 +12,6 @@ def product_stock_observer(sender, instance, **kwargs):
     Спостерігає за оновленнями продуктів та запускає сповіщення
     про низький рівень запасів через сервісний рівень
     """
-    # Використовує сервісний шар для обробки логіки
-    ProductService.check_and_create_stock_alert(instance)
+    # Перевіряємо, чи є об'єкт екземпляром Product (або його підкласів FishingRod/Reel)
+    if isinstance(instance, Product):
+        ProductService.check_and_create_stock_alert(instance)
