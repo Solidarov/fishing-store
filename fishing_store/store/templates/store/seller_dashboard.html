@@ -20,28 +20,26 @@
 
     <section>
         <header>
-            <h3>⚠️ Сповіщення про низький запас (Observer Pattern)</h3>
+            <h3>⚠️ Сповіщення про низький запас</h3>
         </header>
         {% if alerts %}
             <table>
                 <thead>
                     <tr>
                         <th>Товар</th>
-                        <th>Поточний запас</th>
+                        <th>Запас</th>
                         <th>Поріг</th>
-                        <th>Дата</th>
                         <th>Дія</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for alert in alerts %}
                         <tr>
-                            <td><a href="{% url 'store:product_detail' alert.product.id %}">{{ alert.product.name }}</a></td>
+                            <td>{{ alert.product.name }}</td>
                             <td><mark>{{ alert.current_stock }}</mark></td>
                             <td>{{ alert.threshold }}</td>
-                            <td>{{ alert.created_at|date:"Y-m-d H:i" }}</td>
                             <td>
-                                <form action="{% url 'store:alert_resolve' alert.id %}" method="post" style="display:inline;">
+                                <form action="{% url 'store:alert_resolve' alert.id %}" method="post">
                                     {% csrf_token %}
                                     <button type="submit" class="outline">Вирішено</button>
                                 </form>
@@ -51,26 +49,27 @@
                 </tbody>
             </table>
         {% else %}
-            <p>Немає активних сповіщень. Всі запаси в нормі.</p>
+            <p>Немає активних сповіщень.</p>
         {% endif %}
     </section>
 
     <section>
         <header>
-            <h3>📦 Огляд інвентарю</h3>
+            <h3>📦 Ваш інвентар</h3>
         </header>
         <table>
             <thead>
                 <tr>
-                    <th>Назва товару</th>
+                    <th>Назва</th>
                     <th>Ціна</th>
                     <th>Запас</th>
+                    <th>Статус</th>
                     <th>Дії</th>
                 </tr>
             </thead>
             <tbody>
                 {% for product in products %}
-                    <tr>
+                    <tr {% if product.is_deleted %}style="opacity: 0.5; background: #f9f9f9;"{% endif %}>
                         <td>{{ product.name }}</td>
                         <td>${{ product.price }}</td>
                         <td>
@@ -81,9 +80,34 @@
                             {% endif %}
                         </td>
                         <td>
-                            <a href="{% url 'store:product_detail' product.id %}">Перегляд</a> |
-                            <a href="{% url 'store:product_edit' product.id %}">Редагувати</a> |
-                            <a href="/admin/store/product/{{ product.id }}/change/">Admin</a>
+                            {% if product.is_deleted %}
+                                <span style="color: grey;">🗑 Видалено ({{ product.deleted_at|date:"d.m" }})</span>
+                            {% elif not product.is_active %}
+                                <span style="color: orange;">⏸ Неактивний</span>
+                            {% elif product.stock == 0 %}
+                                <span style="color: red;">📉 Немає в наявності</span>
+                            {% else %}
+                                <span style="color: green;">✅ Активний</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if not product.is_deleted %}
+                                <a href="{% url 'store:product_edit' product.id %}">Редагувати</a> |
+                                <form action="{% url 'store:product_delete' product.id %}" method="post" style="display:inline;" onsubmit="return confirm('Ви впевнені?')">
+                                    {% csrf_token %}
+                                    <button type="submit" style="background:none; border:none; color:red; padding:0; cursor:pointer;">Видалити</button>
+                                </form>
+                            {% else %}
+                                <form action="{% url 'store:product_restore' product.id %}" method="post" style="display:inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" style="background:none; border:none; color:blue; padding:0; cursor:pointer;">Відновити</button>
+                                </form> |
+                                <form action="{% url 'store:product_delete' product.id %}" method="post" style="display:inline;" onsubmit="return confirm('ПОВНЕ ВИДАЛЕННЯ! Ви впевнені?')">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="hard" value="true">
+                                    <button type="submit" style="background:none; border:none; color:darkred; padding:0; cursor:pointer;">Знищити</button>
+                                </form>
+                            {% endif %}
                         </td>
                     </tr>
                 {% endfor %}

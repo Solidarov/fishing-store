@@ -11,16 +11,29 @@ class ProductService:
     """
 
     @staticmethod
-    def get_all_products():
-        """Повертає всі продукти відсортовані за датою створення"""
-        return Product.objects.all().order_by("-created_at")
+    def get_catalog_products():
+        """Повертає товари для публічного каталогу (не видалені та активні)."""
+        return Product.objects.filter(deleted_at__isnull=True, is_active=True).order_by(
+            "-created_at"
+        )
 
     @staticmethod
-    def get_product_by_id(product_id):
-        """Отримує специфічний товар або об'єкт його підкласу (напр, вудка або котушка)"""
+    def get_seller_products(user):
+        """Повертає товари конкретного продавця (включаючи м'яко видалені для керування)."""
+        return Product.objects.filter(seller=user).order_by("-created_at")
+
+    @staticmethod
+    def get_product_by_id(product_id, user=None):
+        """Отримує товар з перевіркою прав доступу, якщо вказано user."""
         try:
             product = Product.objects.get(id=product_id)
-            # Django MTI: спробуємо повернути найбільш конкретний екземпляр
+
+            # Якщо передано користувача, перевіряємо чи він має право бачити цей товар (власник або адмін)
+            # Це важливо для редагування/видалення
+            if user and not user.is_admin_member and product.seller != user:
+                return None
+
+            # Повертаємо найбільш специфічний екземпляр
             if hasattr(product, "fishingrod"):
                 return product.fishingrod
             if hasattr(product, "reel"):
@@ -30,12 +43,29 @@ class ProductService:
             return None
 
     @staticmethod
-    def check_and_create_stock_alert(product):
-        """
-        Логіка для перевірки чи товару на складі не замало та створити повідомлення
+    def delete_product(product_id, user, hard=False):
+        """Видаляє товар (м'яко або повністю)."""
+        product = ProductService.get_product_by_id(product_id, user)
+        if product:
+            if hard:
+                product.hard_delete()
+            else:
+                product.delete()
+            return True
+        return False
 
-        Використовується для Observer (Signals)
-        """
+    @staticmethod
+    def restore_product(product_id, user):
+        """Відновлює м'яко видалений товар."""
+        product = Product.objects.filter(id=product_id).first()
+        if product and (user.is_admin_member or product.seller == user):
+            product.restore()
+            return True
+        return False
+
+    @staticmethod
+    def check_and_create_stock_alert(product):
+        """Логіка перевірки залишків та авто-вирішення алертів."""
         if product.is_low_stock():
             # Створити сповіщення тільки якщо не існує активного запису для цієї кількості товару
             # щоб не спамити логами після кожного маленького оновлення
@@ -48,22 +78,24 @@ class ProductService:
                 },
             )
         else:
-            # Якщо запас достатній (> порогу), закриваємо всі нові сповіщення для цього товару
             StockAlert.objects.filter(product=product, status="NEW").update(
                 status="RESOLVED"
             )
 
     @staticmethod
-    def resolve_alert(alert_id):
-        """Позначає конкретне сповіщення як вирішене (ручне керування)."""
-        alert = StockAlert.objects.filter(id=alert_id).first()
-        if alert:
+    def get_active_alerts(user):
+        """Повертає алерти, фільтруючи їх через власника товару."""
+        queryset = StockAlert.objects.filter(
+            status="NEW", product__seller=user
+        ).select_related("product")
+        return queryset
+
+    @staticmethod
+    def resolve_alert(alert_id, user):
+        """Ручне закриття сповіщення з перевіркою прав."""
+        alert = StockAlert.objects.filter(id=alert_id).select_related("product").first()
+        if alert and (user.is_admin_member or alert.product.seller == user):
             alert.status = "RESOLVED"
             alert.save()
             return True
         return False
-
-    @staticmethod
-    def get_active_alerts():
-        """Повертає всі активні логи про критично низьку кількість товару"""
-        return StockAlert.objects.filter(status="NEW").select_related("product")

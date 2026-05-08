@@ -4,8 +4,16 @@ from .models import Product, FishingRod, Reel, StockAlert
 
 @admin.register(FishingRod)
 class FishingRodAdmin(admin.ModelAdmin):
-    list_display = ("name", "price", "stock", "length", "test_min", "test_max")
-    list_filter = ("material",)
+    list_display = (
+        "name",
+        "price",
+        "stock",
+        "length",
+        "test_min",
+        "test_max",
+        "seller",
+    )
+    list_filter = ("material", "seller")
     search_fields = ("name", "description")
 
 
@@ -18,14 +26,27 @@ class ReelAdmin(admin.ModelAdmin):
         "spool_size",
         "gear_ratio",
         "bearings_count",
+        "seller",
     )
+    list_filter = ("seller",)
     search_fields = ("name", "description")
 
 
 @admin.register(StockAlert)
 class StockAlertAdmin(admin.ModelAdmin):
-    list_display = ("product", "current_stock", "threshold", "status", "created_at")
-    list_filter = ("status", "created_at")
+    list_display = (
+        "product",
+        "current_stock",
+        "threshold",
+        "status",
+        "created_at",
+        "product__seller",
+    )
+    list_filter = (
+        "status",
+        "created_at",
+        "product__seller",
+    )
     readonly_fields = ("product", "current_stock", "threshold", "created_at")
 
 
@@ -33,5 +54,12 @@ class StockAlertAdmin(admin.ModelAdmin):
 # додати товар із невизначеної категорії
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ("name", "price", "stock", "low_stock_threshold", "updated_at")
+    list_display = (
+        "name",
+        "price",
+        "stock",
+        "low_stock_threshold",
+        "updated_at",
+        "seller",
+    )
     search_fields = ("name",)
