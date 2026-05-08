@@ -14,6 +14,13 @@ Will be shown soon...
    - Instant login for Customers upon signup and "Pending Activation" state for Sellers.
 - **Unified Profile Interface:** A dynamic multi-form view that allows users to update both account credentials and role-specific metadata (addresses, store names) in one place.
 
+### Store system (work in progress):
+- **Product Hierarchy (MTI):** Uses Django multi-table inheritance for specialized product types (Rods, Reels) with a shared base model.
+- **Soft Delete Mechanism:** Implements a Mixin for safe data removal, allowing products to be deactivated and restored.
+- **Seller Dashboard:** Dedicated interface for sellers to manage inventory and monitor product status.
+- **Stock Observer Pattern:** Automated monitoring via Django Signals that triggers alerts when inventory falls below thresholds.
+- **Service Layer Architecture:** Encapsulates business logic in a dedicated service layer to keep views clean and maintainable.
+
 ## How to run localy
 1. Prerequisties (Linux)
     - Python 3.14+ (pip, virtualenv)
