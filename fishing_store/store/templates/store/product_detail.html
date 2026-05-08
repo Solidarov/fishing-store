@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section>
+    <article>
+        <header>
+            <h1>{{ product.name }}</h1>
+            <p><strong>Категорія:</strong> 
+                {% if product.fishingrod %}Вудлище
+                {% elif product.reel %}Котушка
+                {% else %}Загальне спорядження{% endif %}
+            </p>
+        </header>
+
+        {% if product.image %}
+            <img src="{{ product.image.url }}" alt="{{ product.name }}">
+        {% endif %}
+
+        <p>{{ product.description }}</p>
+
+        <section>
+            <h3>Характеристики</h3>
+            <ul>
+                <li><strong>Ціна:</strong> ${{ product.price }}</li>
+                <li><strong>Наявність:</strong> 
+                    {% if product.stock > 0 %}
+                        <mark>{{ product.stock }} од. у наявності</mark>
+                    {% else %}
+                        <span style="color: red;">Немає в наявності</span>
+                    {% endif %}
+                </li>
+
+                {% if product.fishingrod %}
+                    <li><strong>Довжина:</strong> {{ product.fishingrod.length }} м</li>
+                    <li><strong>Тест:</strong> {{ product.fishingrod.test_min }}г - {{ product.fishingrod.test_max }}г</li>
+                    <li><strong>Матеріал:</strong> {{ product.fishingrod.material }}</li>
+                {% elif product.reel %}
+                    <li><strong>Розмір шпулі:</strong> {{ product.reel.spool_size }}</li>
+                    <li><strong>Передавальне число:</strong> {{ product.reel.gear_ratio }}</li>
+                    <li><strong>Підшипники:</strong> {{ product.reel.bearings_count }}</li>
+                {% endif %}
+            </ul>
+        </section>
+
+        <footer>
+            {% if product.is_available %}
+                <button>Додати в кошик (Скоро)</button>
+            {% else %}
+                <button disabled>Недоступно для покупки</button>
+                {% if product.stock == 0 %}
+                    <p><small>Товару немає на складі, але ви можете ознайомитися з характеристиками.</small></p>
+                {% endif %}
+            {% endif %}
+            <a href="{% url 'store:product_list' %}">Назад до каталогу</a>
+        </footer>
+    </article>
+</section>
+{% endblock %}
