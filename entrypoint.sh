@@ -18,5 +18,8 @@ python manage.py check
 echo "Running migrations..."
 python manage.py migrate --noinput
 
+echo "Create initial super user..."
+python manage.py createsuperuser --no-input 2>/dev/null || echo "Superuser already exists. Skipping."
+
 echo "Start server..."
 python manage.py runserver 0.0.0.0:8000
