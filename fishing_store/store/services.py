@@ -39,15 +39,14 @@ class ProductService:
         if product.is_low_stock():
             # Створити сповіщення тільки якщо не існує активного запису для цієї кількості товару
             # щоб не спамити логами після кожного маленького оновлення
-            last_alert = StockAlert.objects.filter(
-                product=product, status="NEW"
-            ).first()
-            if not last_alert or last_alert.current_stock != product.stock:
-                StockAlert.objects.create(
-                    product=product,
-                    current_stock=product.stock,
-                    threshold=product.low_stock_threshold,
-                )
+            StockAlert.objects.update_or_create(
+                product=product,
+                status="NEW",
+                defaults={
+                    "current_stock": product.stock,
+                    "threshold": product.low_stock_threshold,
+                },
+            )
         else:
             # Якщо запас достатній (> порогу), закриваємо всі нові сповіщення для цього товару
             StockAlert.objects.filter(product=product, status="NEW").update(
