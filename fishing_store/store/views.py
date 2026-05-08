@@ -49,7 +49,7 @@ class SellerDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView)
     template_name = "store/seller_dashboard.html"
 
     def test_func(self):
-        return self.request.user.is_seller_member or self.request.user.is_admin_member
+        return self.request.user.is_seller_member
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
