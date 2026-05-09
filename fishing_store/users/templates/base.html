@@ -12,6 +12,16 @@
             <a href="{% url 'store:product_list' %}"><b>Fishing Store</b></a>
             <ul>
                 <li><a href="{% url 'store:product_list' %}">Catalog</a></li>
+                <li>
+                    <a href="{% url 'store:cart_detail' %}">
+                        Кошик 
+                        {% if cart %}
+                            ({{ cart|length }})
+                        {% else %}
+                            (0)
+                        {% endif %}
+                    </a>
+                </li>
                 {% if user.is_authenticated %}
                     {% if user.role == 'SELLER' or user.role == 'ADMIN' %}
                         <li><a href="{% url 'store:seller_dashboard' %}">Seller Dashboard</a></li>
