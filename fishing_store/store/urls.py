@@ -8,6 +8,10 @@ from .views import (
     ProductDeleteView,
     ProductRestoreView,
     ResolveAlertView,
+    cart_add,
+    cart_remove,
+    cart_clear,
+    cart_detail,
 )
 
 app_name = "store"
@@ -27,4 +31,8 @@ urlpatterns = [
         name="product_restore",
     ),
     path("alert/<int:pk>/resolve/", ResolveAlertView.as_view(), name="alert_resolve"),
+    path("cart/", cart_detail, name="cart_detail"),
+    path("cart/add/<int:product_id>/", cart_add, name="cart_add"),
+    path("cart/remove/<int:product_id>/", cart_remove, name="cart_remove"),
+    path("cart/clear/", cart_clear, name="cart_clear"),
 ]

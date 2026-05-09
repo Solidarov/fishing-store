@@ -44,7 +44,11 @@
 
         <footer>
             {% if product.is_available %}
-                <button>Додати в кошик (Скоро)</button>
+                <form action="{% url 'store:cart_add' product.id %}" method="post">
+                    {% csrf_token %}
+                    <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}" style="width: 70px; display: inline-block;">
+                    <button type="submit">Додати в кошик</button>
+                </form>
             {% else %}
                 <button disabled>Недоступно для покупки</button>
                 {% if product.stock == 0 %}

@@ -20,6 +20,9 @@ Will be shown soon...
 - **Seller Dashboard:** Dedicated interface for sellers to manage inventory and monitor product status.
 - **Stock Observer Pattern:** Automated monitoring via Django Signals that triggers alerts when inventory falls below thresholds.
 - **Service Layer Architecture:** Encapsulates business logic in a dedicated service layer to keep views clean and maintainable.
+- **Session-based Cart System:** A robust shopping cart implementation using Django sessions to track items for both anonymous and logged-in users.
+- **Intelligent Cart Merging:** Seamlessly preserves guest shopping progress by merging session data upon login or registration using the Observer pattern (Signals).
+- **Cart Validation Logic:** Centralized stock and availability checks within the `CartService` to maintain strict business rules during checkout preparation.
 
 ## How to run localy
 1. Prerequisties (Linux)
