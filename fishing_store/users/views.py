@@ -6,13 +6,13 @@ from django.views.generic import CreateView, TemplateView
 from django.urls import reverse_lazy
 from django.contrib import messages
 
-from .forms import (
+from users.forms import (
     CustomUserCreationForm,
     CustomUserUpdateForm,
     CustomerProfileForm,
     SellerProfileForm,
 )
-from .models import CustomUser
+from users.models import CustomUser
 
 
 class RegisterView(CreateView):

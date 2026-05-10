@@ -1,5 +1,5 @@
 from django import forms
-from .models import Product, FishingRod, Reel
+from store.models import Product, FishingRod, Reel
 
 
 class ProductBaseForm(forms.ModelForm):
