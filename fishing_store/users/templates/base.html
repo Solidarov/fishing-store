@@ -27,16 +27,16 @@
                         <li><a href="{% url 'store:seller_dashboard' %}">Seller Dashboard</a></li>
                     {% endif %}
                     <li><a href="{% url 'store:order_history' %}">Мої замовлення</a></li>
-                    <li><a href="{% url 'profile' %}">Profile ({{ user.username }})</a></li>
+                    <li><a href="{% url 'users:profile' %}">Profile ({{ user.username }})</a></li>
                     <li>
-                        <form action="{% url 'logout' %}" method="post" style="display:inline;">
+                        <form action="{% url 'users:logout' %}" method="post" style="display:inline;">
                             {% csrf_token %}
                             <button type="submit">Logout</button>
                         </form>
                     </li>
                 {% else %}
-                    <li><a href="{% url 'login' %}">Login</a></li>
-                    <li><a href="{% url 'register' %}">Register</a></li>
+                    <li><a href="{% url 'users:login' %}">Login</a></li>
+                    <li><a href="{% url 'users:register' %}">Register</a></li>
                 {% endif %}
             </ul>
         </nav>
