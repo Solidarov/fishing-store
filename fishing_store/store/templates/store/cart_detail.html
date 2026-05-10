@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% block title %}Мій кошик{% endblock %}
+
 {% block content %}
 <section>
     <header>
@@ -8,7 +10,7 @@
 
     {% if not cart %}
         <p>Ваш кошик порожній.</p>
-        <p><a href="{% url 'store:product_list' %}">Продовжити покупки</a></p>
+        <p><a href="{% url 'store:product_list' %}" role="button">Продовжити покупки</a></p>
     {% else %}
         <table>
             <thead>
@@ -25,11 +27,14 @@
                     {% with product=item.product %}
                         <tr>
                             <td>
+                                {% if product.image %}
+                                    <img src="{{ product.image.url }}" alt="{{ product.name }}" style="width: 50px; height: auto; margin-right: 10px;">
+                                {% endif %}
                                 <a href="{{ product.get_absolute_url }}">{{ product.name }}</a>
                             </td>
                             <td>{{ item.quantity }}</td>
-                            <td>${{ item.price }}</td>
-                            <td>${{ item.total_price }}</td>
+                            <td>{{ item.price }} грн</td>
+                            <td>{{ item.total_price }} грн</td>
                             <td>
                                 <a href="{% url 'store:cart_remove' product.id %}">Видалити</a>
                             </td>
@@ -40,7 +45,7 @@
             <tfoot>
                 <tr>
                     <td colspan="3"><strong>Всього</strong></td>
-                    <td colspan="2"><strong>${{ cart.get_total_price }}</strong></td>
+                    <td colspan="2"><strong>{{ cart.get_total_price }} грн</strong></td>
                 </tr>
             </tfoot>
         </table>
@@ -48,7 +53,14 @@
         <footer>
             <a href="{% url 'store:product_list' %}" role="button" class="secondary">Продовжити покупки</a>
             <a href="{% url 'store:cart_clear' %}" role="button" class="contrast">Очистити кошик</a>
-            <a href="#" role="button">Оформити замовлення (Скоро)</a>
+            {% if user.is_authenticated %}
+                <form action="{% url 'store:checkout' %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit">Оформити замовлення</button>
+                </form>
+            {% else %}
+                <a href="{% url 'users:login' %}?next={{ request.path }}" role="button">Увійдіть, щоб оформити</a>
+            {% endif %}
         </footer>
     {% endif %}
 </section>

@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Мої замовлення - Fishing Store{% endblock %}
+
+{% block content %}
+<header>
+    <h1>Моя історія замовлень</h1>
+    <p>Тут ви можете переглянути стан ваших покупок, згрупованих за статусом підзамовлень.</p>
+</header>
+
+<section>
+    {% if orders %}
+        {% regroup orders by id as orders_list %}
+        
+        {% for order_group in orders_list %}
+            {% with order=order_group.list.0 %}
+            <article style="border: 1px solid #ddd; padding: 20px; margin-bottom: 30px; border-radius: 8px;">
+                <header>
+                    <h3>Замовлення №{{ order.id }}</h3>
+                    <p><small>Оформлено: {{ order.created_at|date:"d.m.Y H:i" }}</small></p>
+                </header>
+
+                <div>
+                    <strong>Загальна сума: {{ order.effective_price }} грн.</strong><br>
+                    <small>(Загальна сума на момент замовлення: {{ order.total_price }} грн)</small>
+
+                </div>
+
+                <hr>
+
+                <h4>Підзамовлення (по продавцях):</h4>
+                {% for sub_order in order.sub_orders.all %}
+                <div style="background: #f9f9f9; padding: 15px; margin-bottom: 10px; border-radius: 5px; border-left: 5px solid 
+                    {% if sub_order.status == 'PENDING' %} #ffcc00
+                    {% elif sub_order.status == 'SENT' %}#007bff
+                    {% elif sub_order.status == 'COMPLETED' %} #28a745
+                    {% elif sub_order.status == 'CANCELED' %}#dc3545
+                    {% endif %};">
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <strong>Статус: {{ sub_order.get_status_display }}</strong><br>
+                            <small>Продавець: {{ sub_order.seller.get_full_name|default:sub_order.seller.username }}</small>
+                        </div>
+                        <div>
+                            <strong>{{ sub_order.total_price }} грн.</strong>
+                        </div>
+                    </div>
+
+                    <details style="margin-top: 10px;">
+                        <summary>Список товарів ({{ sub_order.items.count }})</summary>
+                        <ul>
+                            {% for item in sub_order.items.all %}
+                                <li>{{ item.product_name }} — {{ item.quantity }} шт. x {{ item.price }} грн.</li>
+                            {% endfor %}
+                        </ul>
+                    </details>
+                </div>
+                {% endfor %}
+            </article>
+            {% endwith %}
+        {% endfor %}
+    {% else %}
+        <p>Ви ще не робили замовлень. <a href="{% url 'store:product_list' %}">Повернутися до магазину</a>.</p>
+    {% endif %}
+</section>
+{% endblock %}

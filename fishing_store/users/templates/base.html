@@ -26,6 +26,7 @@
                     {% if user.role == 'SELLER' or user.role == 'ADMIN' %}
                         <li><a href="{% url 'store:seller_dashboard' %}">Seller Dashboard</a></li>
                     {% endif %}
+                    <li><a href="{% url 'store:order_history' %}">Мої замовлення</a></li>
                     <li><a href="{% url 'profile' %}">Profile ({{ user.username }})</a></li>
                     <li>
                         <form action="{% url 'logout' %}" method="post" style="display:inline;">
