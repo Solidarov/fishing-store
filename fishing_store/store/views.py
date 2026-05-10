@@ -257,3 +257,16 @@ class UpdateSubOrderStatusView(LoginRequiredMixin, UserPassesTestMixin, View):
             messages.error(request, str(e))
 
         return redirect("store:seller_dashboard")
+
+class CancelOrderView(LoginRequiredMixin, View):
+    """Скасування замовлення покупцем."""
+
+    http_method_names = ["post"]
+
+    def post(self, request, order_id):
+        try:
+            OrderService.cancel_order(order_id, request.user)
+            messages.success(request, f"Замовлення №{order_id} було скасовано.")
+        except ValueError as e:
+            messages.error(request, str(e))
+        return redirect("store:order_history")

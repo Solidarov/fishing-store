@@ -15,6 +15,7 @@ from .views import (
     CheckoutView,
     CustomerOrderListView,
     UpdateSubOrderStatusView,
+    CancelOrderView,
 )
 
 app_name = "store"
@@ -48,5 +49,10 @@ urlpatterns = [
         "sub-order/<int:sub_order_id>/update-status/",
         UpdateSubOrderStatusView.as_view(),
         name="update_sub_order_status",
+    ),
+    path(
+        "order/<int:order_id>/cancel/",
+        CancelOrderView.as_view(),
+        name="cancel_order",
     ),
 ]

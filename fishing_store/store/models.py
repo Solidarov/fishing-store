@@ -204,12 +204,38 @@ class Order(models.Model):
         return f"Замовлення №{self.pk} від {self.user.username}"
 
     @property
+    def can_be_canceled(self):
+        """Перевіряє, чи є в замовленні підзамовлення, які ще можна скасувати (статус PENDING)."""
+        return self.sub_orders.filter(status=SubOrder.Status.PENDING).exists()
+
+    @property
     def effective_price(self):
         return sum(
             sub.total_price
             for sub in self.sub_orders.all()
             if sub.status != SubOrder.Status.CANCELED
         )
+
+    @property
+    def status(self):
+        statuses = set(self.sub_orders.values_list("status", flat=True))
+        active = statuses - {SubOrder.Status.CANCELED}
+
+        if not statuses:
+            return "empty"
+        if not active:
+            return SubOrder.Status.CANCELED.label
+
+        if active == {SubOrder.Status.COMPLETED}:
+            return SubOrder.Status.COMPLETED.label
+        if active == {SubOrder.Status.PENDING}:
+            return SubOrder.Status.PENDING.label
+        if active == {SubOrder.Status.SENT}:
+            return SubOrder.Status.SENT.label
+        if SubOrder.Status.PENDING in active:
+            return SubOrder.Status.PENDING.label  # є ще не оброблені продавцями
+
+        return SubOrder.Status.SENT.label
 
 
 class SubOrder(models.Model):

@@ -308,22 +308,50 @@ class OrderService:
             elif new_status == SubOrder.Status.COMPLETED:
                 sub_order.mark_completed()
             elif new_status == SubOrder.Status.CANCELED:
-                with transaction.atomic():
-                    sub_order.cancel()
-                    items_to_update = []
-                    # Повернення товарів на склад за допомогою атомарних операцій
-                    for item in sub_order.items.all():
-                        if item.product:
-                            item.product.stock = F("stock") + item.quantity
-                            items_to_update.append(item.product)
-
-                    Product.objects.bulk_update(items_to_update, ["stock"])
+                OrderService._perform_sub_order_cancellation(sub_order)
             else:
                 raise ValueError(f"Невідомий статус: {new_status}")
         except ValidationError as e:
             raise ValueError(e.message)
 
         return sub_order
+
+    @staticmethod
+    def _perform_sub_order_cancellation(sub_order):
+        """Внутрішній метод для технічного виконання скасування та повернення товарів."""
+        with transaction.atomic():
+            sub_order.cancel()
+            items_to_update = []
+            # Повернення товарів на склад за допомогою атомарних операцій
+            for item in sub_order.items.all():
+                if item.product:
+                    item.product.stock = F("stock") + item.quantity
+                    items_to_update.append(item.product)
+            Product.objects.bulk_update(items_to_update, ["stock"])
+
+    @staticmethod
+    @transaction.atomic
+    def cancel_order(order_id, user):
+        """
+        Скасовує замовлення покупцем.
+        Скасовуються тільки ті підзамовлення, які ще в статусі PENDING.
+        """
+        try:
+            order = Order.objects.get(pk=order_id, user=user)
+        except Order.DoesNotExist:
+            raise ValueError("Замовлення не знайдено.")
+
+        sub_orders_to_cancel = order.sub_orders.filter(status=SubOrder.Status.PENDING)
+
+        if not sub_orders_to_cancel.exists():
+            raise ValueError(
+                "Це замовлення неможливо скасувати (усі товари вже відправлені або завершені)."
+            )
+
+        for sub_order in sub_orders_to_cancel:
+            OrderService._perform_sub_order_cancellation(sub_order)
+
+        return True
 
     @staticmethod
     def get_customer_orders(user):
