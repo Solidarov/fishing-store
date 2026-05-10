@@ -7,14 +7,12 @@ from django.views.generic import (
     View,
 )
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.shortcuts import redirect, render, get_object_or_404
+from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.http import Http404
-from django.views.decorators.http import require_POST
-from django.contrib import messages
-from .models import Product, FishingRod, Reel
-from .services import ProductService, CartService
-from .forms import FishingRodForm, ReelForm, ProductBaseForm
+from store.models import FishingRod, Reel
+from store.services import ProductService, OrderService
+from store.forms import FishingRodForm, ReelForm, ProductBaseForm
 
 
 class ProductListView(ListView):
@@ -50,8 +48,10 @@ class SellerDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["alerts"] = ProductService.get_active_alerts(self.request.user)
-        context["products"] = ProductService.get_seller_products(self.request.user)
+        user = self.request.user
+        context["alerts"] = ProductService.get_active_alerts(user)
+        context["products"] = ProductService.get_seller_products(user)
+        context["sub_orders"] = OrderService.get_seller_orders(user)
         return context
 
 
@@ -141,56 +141,3 @@ class ProductRestoreView(LoginRequiredMixin, UserPassesTestMixin, View):
     def post(self, request, pk):
         ProductService.restore_product(pk, request.user)
         return redirect("store:seller_dashboard")
-
-
-class ResolveAlertView(LoginRequiredMixin, UserPassesTestMixin, View):
-    """Вирішення сповіщення."""
-
-    def test_func(self):
-        return self.request.user.is_seller_member
-
-    def post(self, request, pk):
-        ProductService.resolve_alert(pk, request.user)
-        return redirect("store:seller_dashboard")
-
-
-@require_POST
-def cart_add(request, product_id):
-    """Додавання товару в кошик."""
-    cart = CartService(request)
-    product = get_object_or_404(Product, id=product_id)
-
-    try:
-        quantity = int(request.POST.get("quantity", 1))
-    except (ValueError, TypeError):
-        quantity = 1
-
-    try:
-        cart.add(product=product, quantity=quantity, override_quantity=False)
-        messages.success(request, f'"{product.name}" додано до кошика.')
-    except ValueError as e:
-        messages.error(request, str(e))
-
-    return redirect("store:product_detail", pk=product_id)
-
-
-def cart_remove(request, product_id):
-    """Видалення товару з кошика."""
-    cart = CartService(request)
-    product = get_object_or_404(Product, id=product_id)
-    cart.remove(product)
-    messages.info(request, f'"{product.name}" видалено з кошика.')
-    return redirect("store:cart_detail")
-
-
-def cart_clear(request):
-    """Повне очищення кошика."""
-    cart = CartService(request)
-    cart.clear()
-    messages.info(request, "Ваш кошик було очищено.")
-    return redirect("store:cart_detail")
-
-
-def cart_detail(request):
-    """Відображення сторінки кошика."""
-    return render(request, "store/cart_detail.html")

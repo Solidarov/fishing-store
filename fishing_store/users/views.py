@@ -22,11 +22,11 @@ class RegisterView(CreateView):
 
     form_class = CustomUserCreationForm
     template_name = "users/register.html"
-    success_url = reverse_lazy("login")
+    success_url = reverse_lazy("users:login")
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated:
-            return redirect("profile")  # переадресація залогованого користувача
+            return redirect("users:profile")  # переадресація залогованого користувача
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
@@ -37,14 +37,14 @@ class RegisterView(CreateView):
             messages.success(
                 self.request, f"Вітаємо, {user.username}! Реєстрація успішна."
             )
-            return redirect("profile")
+            return redirect("users:profile")
         else:
             # Користувач неактивний - залишаємо на сторінці логіну (Продавець)
             messages.info(
                 self.request,
                 "Ваш акаунт продавця створено. Будь ласка, зачекайте на активацію адміністратором.",
             )
-            return redirect("login")
+            return redirect("users:login")
 
 
 class UserLoginView(LoginView):
@@ -52,11 +52,11 @@ class UserLoginView(LoginView):
     redirect_authenticated_user = True
 
     def get_success_url(self):
-        return reverse_lazy("profile")
+        return reverse_lazy("users:profile")
 
 
 class UserLogoutView(LogoutView):
-    next_page = reverse_lazy("login")
+    next_page = reverse_lazy("users:login")
 
 
 class ProfileView(LoginRequiredMixin, TemplateView):
@@ -105,7 +105,7 @@ class ProfileView(LoginRequiredMixin, TemplateView):
             if profile_form:
                 profile_form.save()
             messages.success(request, "Ваш профіль успішно оновлено!")
-            return redirect("profile")
+            return redirect("users:profile")
 
         return render(
             request,

@@ -1,43 +1,7 @@
 from django.db import models
 from django.conf import settings
-from django.utils import timezone
 from django.urls import reverse
-
-
-class SoftDeleteMixin(models.Model):
-    """
-    Міксин для реалізації "м'якого" видалення об'єктів.
-    Додає поля для відстеження видалення та деактивації.
-    """
-
-    deleted_at = models.DateTimeField(
-        null=True, blank=True, verbose_name="Дата видалення"
-    )
-    is_active = models.BooleanField(default=True, verbose_name="Активний")
-
-    class Meta:
-        abstract = True
-
-    def delete(self, *args, **kwargs):
-        """М'яке видалення: встановлює дату видалення та деактивує об'єкт."""
-        self.deleted_at = timezone.now()
-        self.is_active = False
-        self.save()
-
-    def hard_delete(self, *args, **kwargs):
-        """Повне видалення об'єкта з бази даних."""
-        super().delete(*args, **kwargs)
-
-    def restore(self):
-        """Відновлення м'яко видаленого об'єкта."""
-        self.deleted_at = None
-        self.is_active = True
-        self.save()
-
-    @property
-    def is_deleted(self):
-        """Перевіряє, чи був об'єкт видалений."""
-        return self.deleted_at is not None
+from store.models import SoftDeleteMixin
 
 
 class Product(SoftDeleteMixin, models.Model):
@@ -140,37 +104,3 @@ class Reel(Product):
 
     def __str__(self):
         return f"Котушка: {self.name} (Розмір {self.spool_size})"
-
-
-class StockAlert(models.Model):
-    """
-    Модель логів для повідомлень про низьку кількість товарів
-
-    Частина імплементації патерну Observer
-    """
-
-    STATUS_CHOICES = [
-        ("NEW", "Нове"),
-        ("RESOLVED", "Вирішено"),
-    ]
-
-    product = models.ForeignKey(
-        Product,
-        on_delete=models.CASCADE,
-        related_name="stock_alerts",
-        verbose_name="Товар",
-    )
-    current_stock = models.PositiveIntegerField(verbose_name="Поточний запас")
-    threshold = models.PositiveIntegerField(verbose_name="Поріг")
-    status = models.CharField(
-        max_length=20, choices=STATUS_CHOICES, default="NEW", verbose_name="Статус"
-    )
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата виникнення")
-
-    class Meta:
-        ordering = ["-created_at"]
-        verbose_name = "Сповіщення про запас"
-        verbose_name_plural = "Сповіщення про запаси"
-
-    def __str__(self):
-        return f"Сповіщення: {self.product.name} (Запас: {self.current_stock})"

@@ -4,7 +4,7 @@
 <section>
     <header>
         <h1>Панель продавця</h1>
-        <p>Вітаємо, {{ user.username }}. Тут ви можете керувати асортиментом та переглядати сповіщення.</p>
+        <p>Вітаємо, {{ user.get_full_name }}. Тут ви можете керувати асортиментом та замовленнями.</p>
     </header>
 
     <section>
@@ -12,10 +12,68 @@
             <h3>🛠 Керування товарами</h3>
         </header>
         <p>Додати новий товар: 
-            <a href="{% url 'store:product_add' %}?type=rod"><button>🎣 Вудлище</button></a>
-            <a href="{% url 'store:product_add' %}?type=reel"><button>⚙️ Котушку</button></a>
-            <a href="{% url 'store:product_add' %}"><button>📦 Інше</button></a>
+            <a href="{% url 'store:product_add' %}?type=rod" role="button" class="secondary">🎣 Вудлище</a>
+            <a href="{% url 'store:product_add' %}?type=reel" role="button" class="secondary">⚙️ Котушку</a>
+            <a href="{% url 'store:product_add' %}" role="button" class="secondary">📦 Інше</a>
         </p>
+    </section>
+
+    <section>
+        <header>
+            <h3>🚚 Ваші замовлення на обробку</h3>
+        </header>
+        {% if sub_orders %}
+        <table>
+            <thead>
+                <tr>
+                    <th>№</th>
+                    <th>Клієнт</th>
+                    <th>Товари</th>
+                    <th>Сума</th>
+                    <th>Статус</th>
+                    <th>Дія</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sub_order in sub_orders %}
+                <tr>
+                    <td>{{ sub_order.id }}</td>
+                    <td>{{ sub_order.order.user.username }}</td>
+                    <td>
+                        <ul>
+                        {% for item in sub_order.items.all %}
+                            <li>{{ item.product_name }} ({{ item.quantity }} шт.)</li>
+                        {% endfor %}
+                        </ul>
+                    </td>
+                    <td>{{ sub_order.total_price }} грн</td>
+                    <td>
+                        <mark>{{ sub_order.get_status_display }}</mark>
+                    </td>
+                    <td>
+                        <form action="{% url 'store:update_sub_order_status' sub_order.id %}" method="post">
+                            {% csrf_token %}
+                            <select name="status">
+                                {% if sub_order.can_mark_sent %}
+                                <option value="SENT">Відправити</option>
+                                {% endif %}
+                                {% if sub_order.can_mark_completed %}
+                                <option value="COMPLETED">Завершити</option>
+                                {% endif %}
+                                {% if sub_order.can_cancel %}
+                                <option value="CANCELED">Скасувати</option>
+                                {% endif %}
+                            </select>
+                            <button type="submit">Змінити</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>У вас поки немає замовлень.</p>
+        {% endif %}
     </section>
 
     <section>
@@ -71,7 +129,7 @@
                 {% for product in products %}
                     <tr {% if product.is_deleted %}style="opacity: 0.5; background: #f9f9f9;"{% endif %}>
                         <td>{{ product.name }}</td>
-                        <td>${{ product.price }}</td>
+                        <td>{{ product.price }} грн</td>
                         <td>
                             {% if product.stock <= product.low_stock_threshold %}
                                 <mark>{{ product.stock }}</mark>
@@ -93,23 +151,27 @@
                         <td>
                             {% if not product.is_deleted %}
                                 <a href="{% url 'store:product_edit' product.id %}">Редагувати</a> |
-                                <form action="{% url 'store:product_delete' product.id %}" method="post" style="display:inline;" onsubmit="return confirm('Ви впевнені?')">
+                                <form action="{% url 'store:product_delete' product.id %}" method="post" style="display:inline;" onsubmit="return confirm('Ви впевнені, що хочете видалити товар?')">
                                     {% csrf_token %}
-                                    <button type="submit" style="background:none; border:none; color:red; padding:0; cursor:pointer;">Видалити</button>
+                                    <button type="submit" class="contrast" style="--background-color: red; --color: white; padding: 2px 5px; font-size: 12px; border: none;">Видалити</button>
                                 </form>
                             {% else %}
                                 <form action="{% url 'store:product_restore' product.id %}" method="post" style="display:inline;">
                                     {% csrf_token %}
-                                    <button type="submit" style="background:none; border:none; color:blue; padding:0; cursor:pointer;">Відновити</button>
-                                </form> |
-                                <form action="{% url 'store:product_delete' product.id %}" method="post" style="display:inline;" onsubmit="return confirm('ПОВНЕ ВИДАЛЕННЯ! Ви впевнені?')">
+                                    <button type="submit" class="secondary" style="padding: 2px 5px; font-size: 12px;">Відновити</button>
+                                </form>
+                                {% if user.is_admin_member %}
+                                 | <form action="{% url 'store:product_delete' product.id %}" method="post" style="display:inline;" onsubmit="return confirm('ПОВНЕ ВИДАЛЕННЯ! Ця дія незворотня. Ви впевнені?')">
                                     {% csrf_token %}
                                     <input type="hidden" name="hard" value="true">
-                                    <button type="submit" style="background:none; border:none; color:darkred; padding:0; cursor:pointer;">Знищити</button>
+                                    <button type="submit" class="contrast" style="--background-color: darkred; --color: white; padding: 2px 5px; font-size: 12px;">Знищити</button>
                                 </form>
+                                {% endif %}
                             {% endif %}
                         </td>
                     </tr>
+                {% empty %}
+                <tr><td colspan="5">У вас ще немає товарів.</td></tr>
                 {% endfor %}
             </tbody>
         </table>
