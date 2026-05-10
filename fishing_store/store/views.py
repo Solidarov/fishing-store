@@ -258,6 +258,7 @@ class UpdateSubOrderStatusView(LoginRequiredMixin, UserPassesTestMixin, View):
 
         return redirect("store:seller_dashboard")
 
+
 class CancelOrderView(LoginRequiredMixin, View):
     """Скасування замовлення покупцем."""
 
