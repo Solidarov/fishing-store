@@ -20,10 +20,14 @@ class OrderService:
     """
 
     @staticmethod
-    def create_order(user, cart_service: CartService):
+    def create_order(
+        user, cart_service: CartService, checkout_data: dict, save_to_profile: bool
+    ):
         """
         Створює замовлення з товарів у кошику.
-        - Створює `Order` та `SubOrder` для кожного продавця.
+        - Зберігає адресу доставки в `Order`.
+        - Опціонально оновлює профіль користувача.
+        - Створює `SubOrder` для кожного продавця.
         - Зменшує залишки на складі.
         - Очищує кошик.
         Все виконується в атомній транзакції.
@@ -41,9 +45,8 @@ class OrderService:
 
         with transaction.atomic():
             # 1. Зарезервувати продукти, що в кошику для транзакції
-            products = Product.objects.select_for_update().filter(
-                pk__in=[item["product"].pk for item in all_cart_items]
-            )
+            products_pks = [item["product"].pk for item in all_cart_items]
+            products = Product.objects.select_for_update().filter(pk__in=products_pks)
 
             # 2. Повторна перевірка товару вже з блокуванням (гарантована)
             quantity_by_pk = {
@@ -53,10 +56,13 @@ class OrderService:
                 if product.stock < quantity_by_pk[product.pk]:
                     raise ValueError(f"Недостатньо товару '{product.name}' на складі.")
 
-            # 3. Створити головне замовлення
-            order = Order.objects.create(
-                user=user, total_price=cart_service.get_total_price()
-            )
+            # 3. Створити головне замовлення з даними з форми
+            order_data = {
+                "user": user,
+                "total_price": cart_service.get_total_price(),
+                **checkout_data,
+            }
+            order = Order.objects.create(**order_data)
 
             # 4. Згрупувати товари в кошику за продавцем
             items_by_seller = defaultdict(list)
@@ -95,6 +101,16 @@ class OrderService:
 
             Product.objects.bulk_update(products, ["stock"])
 
+            # Оновлюємо профіль, якщо користувач погодився
+            if save_to_profile:
+                profile = getattr(user, "customer_profile", None) or getattr(
+                    user, "seller_profile", None
+                )
+                if profile:
+                    for field, value in checkout_data.items():
+                        setattr(profile, field, value)
+                    profile.save()
+
         # 8. Очистити кошик після успішної транзакції
         cart_service.clear()
         return order
@@ -106,7 +122,7 @@ class OrderService:
         Якщо статус змінюється на 'Canceled', товари повертаються на склад.
         """
         try:
-            sub_order = SubOrder.objects.get(pk=sub_order_id)
+            sub_order = SubOrder.objects.select_related("seller").get(pk=sub_order_id)
         except SubOrder.DoesNotExist:
             raise ValueError("Підзамовлення не знайдено.")
 
@@ -135,7 +151,7 @@ class OrderService:
             sub_order.cancel()
             items_to_update = []
             # Повернення товарів на склад за допомогою атомарних операцій
-            for item in sub_order.items.all():
+            for item in sub_order.items.select_related("product").all():
                 if item.product:
                     item.product.stock = F("stock") + item.quantity
                     items_to_update.append(item.product)
@@ -182,6 +198,7 @@ class OrderService:
         """Повертає всі підзамовлення для вказаного продавця."""
         return (
             SubOrder.objects.filter(seller=user)
+            .select_related("order__user")
             .prefetch_related("items__product")
             .order_by("-created_at")
         )

@@ -54,10 +54,7 @@
             <a href="{% url 'store:product_list' %}" role="button" class="secondary">Продовжити покупки</a>
             <a href="{% url 'store:cart_clear' %}" role="button" class="contrast">Очистити кошик</a>
             {% if user.is_authenticated %}
-                <form action="{% url 'store:checkout' %}" method="post">
-                    {% csrf_token %}
-                    <button type="submit">Оформити замовлення</button>
-                </form>
+                 <a href="{% url 'store:checkout' %}" role="button">Оформити замовлення</a>
             {% else %}
                 <a href="{% url 'users:login' %}?next={{ request.path }}" role="button">Увійдіть, щоб оформити</a>
             {% endif %}

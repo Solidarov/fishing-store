@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Оформлення замовлення{% endblock %}
+
+{% block content %}
+<section>
+    <header>
+        <h1>Оформлення замовлення</h1>
+        <p>Будь ласка, введіть адресу доставки.</p>
+    </header>
+
+    <article>
+        <form method="post">
+            {% csrf_token %}
+            <fieldset>
+                <legend>Адреса доставки</legend>
+                {{ form.as_p }}
+            </fieldset>
+            
+            <footer>
+                <a href="{% url 'store:cart_detail' %}" role="button" class="secondary">Повернутись до кошика</a>
+                <button type="submit">Підтвердити замовлення</button>
+            </footer>
+        </form>
+    </article>
+</section>
+{% endblock %}
