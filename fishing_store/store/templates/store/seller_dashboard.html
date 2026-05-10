@@ -36,7 +36,7 @@
             </thead>
             <tbody>
                 {% for sub_order in sub_orders %}
-                <tr {% if sub_order.is_deleted %}style="opacity: 0.5;"{% endif %}>
+                <tr>
                     <td>{{ sub_order.id }}</td>
                     <td>{{ sub_order.order.user.username }}</td>
                     <td>
@@ -51,7 +51,6 @@
                         <mark>{{ sub_order.get_status_display }}</mark>
                     </td>
                     <td>
-                        {% if not sub_order.is_deleted %}
                         <form action="{% url 'store:update_sub_order_status' sub_order.id %}" method="post">
                             {% csrf_token %}
                             <select name="status">
@@ -67,9 +66,6 @@
                             </select>
                             <button type="submit">Змінити</button>
                         </form>
-                        {% else %}
-                        <p>Видалено</p>
-                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}

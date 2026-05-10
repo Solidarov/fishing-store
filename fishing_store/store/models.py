@@ -178,7 +178,7 @@ class StockAlert(models.Model):
         return f"Сповіщення: {self.product.name} (Запас: {self.current_stock})"
 
 
-class Order(SoftDeleteMixin, models.Model):
+class Order(models.Model):
     """
     Головна модель замовлення, що об'єднує підзамовлення.
     """
@@ -212,7 +212,7 @@ class Order(SoftDeleteMixin, models.Model):
         )
 
 
-class SubOrder(SoftDeleteMixin, models.Model):
+class SubOrder(models.Model):
     """
     Підзамовлення, згруповане за продавцем.
     Реалізує патерн State через перевірку переходів статусів.

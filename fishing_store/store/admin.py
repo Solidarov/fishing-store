@@ -108,10 +108,10 @@ class SubOrderInline(admin.StackedInline):
 class OrderAdmin(admin.ModelAdmin):
     """Адмін-панель для головного замовлення."""
 
-    list_display = ("id", "user", "total_price", "created_at", "is_deleted")
+    list_display = ("id", "user", "total_price", "created_at")
     list_filter = ("created_at", "user")
-    search_fields = ("id", "user__email", "user__first_name")
-    readonly_fields = ("user", "total_price", "created_at", "updated_at", "deleted_at")
+    search_fields = ("id", "user__email", "user__username")
+    readonly_fields = ("user", "total_price", "created_at", "updated_at")
     inlines = [SubOrderInline]
 
 

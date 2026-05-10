@@ -310,11 +310,14 @@ class OrderService:
             elif new_status == SubOrder.Status.CANCELED:
                 with transaction.atomic():
                     sub_order.cancel()
-                    # Повернення товарів на склад
+                    items_to_update = []
+                    # Повернення товарів на склад за допомогою атомарних операцій
                     for item in sub_order.items.all():
                         if item.product:
-                            item.product.stock += item.quantity
-                            item.product.save(update_fields=["stock"])
+                            item.product.stock = F("stock") + item.quantity
+                            items_to_update.append(item.product)
+
+                    Product.objects.bulk_update(items_to_update, ["stock"])
             else:
                 raise ValueError(f"Невідомий статус: {new_status}")
         except ValidationError as e:
@@ -342,33 +345,3 @@ class OrderService:
             .prefetch_related("items__product")
             .order_by("-created_at")
         )
-
-    @staticmethod
-    def delete_sub_order(sub_order_id, user, hard=False):
-        """
-        Видаляє підзамовлення.
-        Продавець може виконати тільки м'яке видалення.
-        Адмін може виконати жорстке видалення.
-        """
-        try:
-            sub_order = SubOrder.objects.get(pk=sub_order_id)
-        except SubOrder.DoesNotExist:
-            raise ValueError("Підзамовлення не знайдено.")
-
-        # Перевірка прав
-        if not (user.is_admin_member or sub_order.seller == user):
-            raise PermissionError("У вас немає прав на видалення цього підзамовлення.")
-
-        if hard and user.is_admin_member:
-            sub_order.hard_delete()
-            return True
-        elif not hard:
-            sub_order.delete()
-            return True
-
-        if hard and not user.is_admin_member:
-            raise PermissionError(
-                "Тільки адміністратор може остаточно видаляти записи."
-            )
-
-        return False
