@@ -124,7 +124,7 @@ class ProductDeleteView(LoginRequiredMixin, UserPassesTestMixin, View):
         if obj is None:
             return False
         return obj and (
-            self.request.user.is_admin_member or obj.seller == self.request.user
+            self.request.user.is_seller_member or obj.seller == self.request.user
         )
 
     def post(self, request, pk):
