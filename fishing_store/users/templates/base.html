@@ -12,6 +12,7 @@
             <a href="{% url 'store:product_list' %}"><b>Fishing Store</b></a>
             <ul>
                 <li><a href="{% url 'store:product_list' %}">Catalog</a></li>
+                {% if not user.is_admin_member %}
                 <li>
                     <a href="{% url 'store:cart_detail' %}">
                         Кошик 
@@ -22,11 +23,14 @@
                         {% endif %}
                     </a>
                 </li>
+                {% endif %}
                 {% if user.is_authenticated %}
-                    {% if user.role == 'SELLER' or user.role == 'ADMIN' %}
+                    {% if user.role == 'SELLER' %}
                         <li><a href="{% url 'store:seller_dashboard' %}">Seller Dashboard</a></li>
                     {% endif %}
-                    <li><a href="{% url 'store:order_history' %}">Мої замовлення</a></li>
+                    {% if user.role != 'ADMIN' %}
+                        <li><a href="{% url 'store:order_history' %}">Мої замовлення</a></li>
+                    {% endif %}
                     <li><a href="{% url 'users:profile' %}">Profile ({{ user.username }})</a></li>
                     <li>
                         <form action="{% url 'users:logout' %}" method="post" style="display:inline;">

@@ -84,13 +84,16 @@ class CheckoutView(LoginRequiredMixin, UserPassesTestMixin, FormView):
             return self.form_invalid(form)
 
 
-class CustomerOrderListView(LoginRequiredMixin, ListView):
+class CustomerOrderListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     """
     Представлення для перегляду історії замовлень покупця.
     """
 
     template_name = "store/order_history.html"
     context_object_name = "orders"
+
+    def test_func(self):
+        return not self.request.user.is_admin_member
 
     def get_queryset(self):
         return OrderService.get_customer_orders(self.request.user)

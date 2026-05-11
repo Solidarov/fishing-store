@@ -27,7 +27,7 @@ class CustomUser(AbstractUser):
     @property
     def is_seller_member(self):
         """Чи має користувач права продавця"""
-        return self.role == self.Role.SELLER or self.is_admin_member
+        return self.role == self.Role.SELLER
 
     @property
     def is_customer_member(self):
