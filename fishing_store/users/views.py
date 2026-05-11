@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
 from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views import View
 from django.views.generic import CreateView, TemplateView
 from django.urls import reverse_lazy
 from django.contrib import messages
@@ -61,7 +62,7 @@ class UserLogoutView(LogoutView):
 
 class ProfileView(LoginRequiredMixin, TemplateView):
     """
-    Відображення та редагування профілю користувача.
+    Відображення профілю користувача.
     """
 
     template_name = "users/profile.html"
@@ -70,9 +71,29 @@ class ProfileView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         user = self.request.user
 
+        if user.role == CustomUser.Role.CUSTOMER and hasattr(user, "customer_profile"):
+            context["profile"] = user.customer_profile
+        elif user.role == CustomUser.Role.SELLER and hasattr(user, "seller_profile"):
+            context["profile"] = user.seller_profile
+        else:
+            context["profile"] = None
+
+        return context
+
+
+class ProfileUpdateView(LoginRequiredMixin, TemplateView):
+    """
+    Редагування профілю користувача.
+    """
+
+    template_name = "users/profile_edit.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+
         context["user_form"] = CustomUserUpdateForm(instance=user)
 
-        # підтягуємо профіль з БД
         if user.role == CustomUser.Role.CUSTOMER and hasattr(user, "customer_profile"):
             context["profile_form"] = CustomerProfileForm(
                 instance=user.customer_profile
@@ -88,7 +109,6 @@ class ProfileView(LoginRequiredMixin, TemplateView):
         user = request.user
         user_form = CustomUserUpdateForm(request.POST, instance=user)
 
-        # Визначення форми профілю (адмін не має форми)
         profile_form = None
         if user.role == CustomUser.Role.CUSTOMER and hasattr(user, "customer_profile"):
             profile_form = CustomerProfileForm(
@@ -112,3 +132,16 @@ class ProfileView(LoginRequiredMixin, TemplateView):
             self.template_name,
             {"user_form": user_form, "profile_form": profile_form},
         )
+
+
+class ProfileDeleteView(LoginRequiredMixin, View):
+    """
+    М'яке видалення акаунту користувача.
+    """
+
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        user.delete()  # М'яке видалення (UserSoftDeleteMixin)
+        logout(request)
+        messages.success(request, "Ваш акаунт було успішно видалено.")
+        return redirect("store:product_list")

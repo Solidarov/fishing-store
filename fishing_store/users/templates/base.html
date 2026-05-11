@@ -31,6 +31,9 @@
                     {% if user.role != 'ADMIN' %}
                         <li><a href="{% url 'store:order_history' %}">Мої замовлення</a></li>
                     {% endif %}
+                    {% if user.role == 'ADMIN' %}
+                        <li><a href="{% url 'admin:index' %}">Admin Panel</a></li>
+                    {% endif %}
                     <li><a href="{% url 'users:profile' %}">Profile ({{ user.username }})</a></li>
                     <li>
                         <form action="{% url 'users:logout' %}" method="post" style="display:inline;">

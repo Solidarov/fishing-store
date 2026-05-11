@@ -1,18 +1,34 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h2>My Profile ({{ user.get_role_display }})</h2>
-    <p>Status: {% if user.is_active %}Active{% else %}Inactive (Pending activation){% endif %}</p>
+    <h2>Мій профіль ({{ user.get_role_display }})</h2>
+    <p>Статус: {% if user.is_active %}Активний{% else %}Неактивний{% endif %}</p>
     
-    <form method="post">
-        {% csrf_token %}
-        <h3>Account Information</h3>
-            {{ user_form.as_p }}
+    <section>
+        <h3>Інформація про акаунт</h3>
+        <p><strong>Ім'я користувача:</strong> {{ user.username }}</p>
+        <p><strong>Email:</strong> {{ user.email|default:"Не вказано" }}</p>
         
-        {% if not user.is_admin_member %}
-            <h3>Profile Details</h3>
-            {{ profile_form.as_p }}
+        {% if profile %}
+            <h3>Деталі профілю</h3>
+            {% if user.role == "SELLER" %}
+                <p><strong>Назва магазину:</strong> {{ profile.store_name|default:"Не вказано" }}</p>
+            {% endif %}
+            <p><strong>Номер телефону:</strong> {{ profile.phone_number|default:"Не вказано" }}</p>
+            <p><strong>Область:</strong> {{ profile.region|default:"Не вказано" }}</p>
+            <p><strong>Місто:</strong> {{ profile.city|default:"Не вказано" }}</p>
+            <p><strong>Вулиця:</strong> {{ profile.street|default:"Не вказано" }}</p>
+            <p><strong>Будинок:</strong> {{ profile.house_num|default:"-" }}, <strong>Квартира:</strong> {{ profile.flat_num|default:"-" }}</p>
+            <p><strong>Поштовий індекс:</strong> {{ profile.postal_code|default:"Не вказано" }}</p>
         {% endif %}
-        <button type="submit">Save Changes</button>
-    </form>
+    </section>
+
+    <div style="display: flex; gap: 10px; margin-top: 20px;">
+        <a href="{% url 'users:profile_edit' %}" class="button">Редагувати профіль</a>
+        
+        <form action="{% url 'users:profile_delete' %}" method="post" onsubmit="return confirm('Ви впевнені, що хочете видалити свій акаунт? Ваші дані будуть приховані, а ви будете розлогінені.');">
+            {% csrf_token %}
+            <button type="submit" style="background-color: #ff4444; border-color: #ff4444; color: white;">Видалити акаунт</button>
+        </form>
+    </div>
 {% endblock %}

@@ -4,6 +4,8 @@ from users.views import (
     UserLoginView,
     UserLogoutView,
     ProfileView,
+    ProfileUpdateView,
+    ProfileDeleteView,
 )
 
 app_name = "users"
@@ -13,4 +15,6 @@ urlpatterns = [
     path("login/", UserLoginView.as_view(), name="login"),
     path("logout/", UserLogoutView.as_view(), name="logout"),
     path("profile/", ProfileView.as_view(), name="profile"),
+    path("profile/edit/", ProfileUpdateView.as_view(), name="profile_edit"),
+    path("profile/delete/", ProfileDeleteView.as_view(), name="profile_delete"),
 ]

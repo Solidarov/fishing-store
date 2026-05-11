@@ -5,6 +5,44 @@ from users.models import CustomUser, CustomerProfile, SellerProfile
 from users.forms import CustomUserCreationForm, CustomUserChangeForm
 
 
+class SoftDeleteModelAdmin(admin.ModelAdmin):
+    actions = [
+        "delete_queryset",
+        "restore_model",
+        "hard_delete_model",
+    ]
+
+    def get_actions(self, request):
+        """Видаляємо стандартну дію видалення Django, щоб замінити її нашою"""
+        actions = super().get_actions(request)
+        if "delete_selected" in actions:
+            del actions["delete_selected"]
+        return actions
+
+    def delete_model(self, request, obj):
+        """Переписує видалення однієї моделі (кнопка 'Delete' в картці)"""
+        obj.delete()
+
+    def delete_queryset(self, request, queryset):
+        """Переписує масове видалення (через dropdown в списку)"""
+        for obj in queryset:
+            obj.delete()
+
+    delete_queryset.short_description = "М'яко видалити вибрані записи"
+
+    def restore_model(self, request, queryset):
+        for obj in queryset:
+            obj.restore()
+
+    restore_model.short_description = "Відновити вибрані записи"
+
+    def hard_delete_model(self, request, queryset):
+        for obj in queryset:
+            obj.hard_delete()
+
+    hard_delete_model.short_description = "Повністю видалити вибрані записи"
+
+
 class CustomerProfileInline(admin.StackedInline):
     """
     Інформація про профіль користувача
@@ -25,14 +63,16 @@ class SellerProfileInline(admin.StackedInline):
     verbose_name_plural = "Профіль продавця"
 
 
-class CustomUserAdmin(UserAdmin):
+class CustomUserAdmin(SoftDeleteModelAdmin, UserAdmin):
     add_form = CustomUserCreationForm
     form = CustomUserChangeForm
     model = CustomUser
-    list_display = ["username", "email", "role", "is_active", "is_staff"]
-    list_filter = ["role", "is_active", "is_staff"]
+    list_display = ["username", "email", "role", "is_active", "is_staff", "deleted_at"]
+    list_filter = ["role", "is_active", "is_staff", "deleted_at"]
 
-    fieldsets = UserAdmin.fieldsets + (("Додаткова інформація", {"fields": ("role",)}),)
+    fieldsets = UserAdmin.fieldsets + (
+        ("Додаткова інформація", {"fields": ("role", "deleted_at")}),
+    )
     add_fieldsets = (
         (
             None,

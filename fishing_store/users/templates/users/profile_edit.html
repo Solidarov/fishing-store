@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Редагування профілю ({{ user.get_role_display }})</h2>
+    
+    <form method="post">
+        {% csrf_token %}
+        <h3>Інформація про акаунт</h3>
+        {{ user_form.as_p }}
+        
+        {% if profile_form %}
+            <h3>Деталі профілю</h3>
+            {{ profile_form.as_p }}
+        {% endif %}
+        
+        <div style="display: flex; gap: 10px;">
+            <button type="submit">Зберегти зміни</button>
+            <a href="{% url 'users:profile' %}" class="button">Скасувати</a>
+        </div>
+    </form>
+{% endblock %}
