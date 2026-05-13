@@ -1,7 +1,8 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from .models import Product
-from .services import ProductService
+
+from store.models import Product
+from store.services import ProductService
 
 
 @receiver(post_save)

@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
-from .models import CustomUser, CustomerProfile, SellerProfile
+
+from users.models import CustomUser, CustomerProfile, SellerProfile
 
 
 class CustomUserCreationForm(UserCreationForm):
@@ -63,6 +64,8 @@ class CustomerProfileForm(forms.ModelForm):
     class Meta:
         model = CustomerProfile
         fields = (
+            "first_name",
+            "last_name",
             "phone_number",
             "region",
             "city",
@@ -82,6 +85,8 @@ class SellerProfileForm(forms.ModelForm):
         model = SellerProfile
         fields = (
             "store_name",
+            "first_name",
+            "last_name",
             "phone_number",
             "region",
             "city",
@@ -90,3 +95,8 @@ class SellerProfileForm(forms.ModelForm):
             "flat_num",
             "postal_code",
         )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["store_name"].required = True
+        self.fields["store_name"].help_text = "Назва вашого магазину, яку бачитимуть покупці"

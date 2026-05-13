@@ -22,6 +22,19 @@ class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата створення")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата оновлення")
 
+    # Адресні дані
+    first_name = models.CharField(max_length=50, verbose_name="Ім'я користувача")
+    last_name = models.CharField(max_length=100, verbose_name="Прізвище користувача")
+    phone_number = models.CharField(max_length=20, verbose_name="Номер телефону")
+    region = models.CharField(max_length=50, verbose_name="Область")
+    city = models.CharField(max_length=50, verbose_name="Місто")
+    street = models.CharField(max_length=100, verbose_name="Вулиця")
+    house_num = models.CharField(max_length=10, verbose_name="Номер будинку")
+    flat_num = models.CharField(
+        max_length=10, blank=True, verbose_name="Номер квартири"
+    )
+    postal_code = models.CharField(max_length=25, verbose_name="Поштовий індекс")
+
     class Meta:
         ordering = ["-created_at"]
         verbose_name = "Замовлення"
@@ -110,6 +123,21 @@ class SubOrder(models.Model):
             f"Підзамовлення №{self.pk} для {self.seller.username}"
             f" ({self.get_status_display()})"
         )
+
+    @property
+    def delivery_address(self):
+        """Повертає відформатовану адресу доставки з основного замовлення."""
+        order = self.order
+        address_parts = [
+            order.postal_code,
+            f"обл. {order.region}",
+            f"м. {order.city}",
+            f"{order.street}, буд. {order.house_num}",
+        ]
+        if order.flat_num:
+            address_parts.append(f"кв. {order.flat_num}")
+
+        return ", ".join(filter(None, address_parts))
 
     # State Pattern
     def can_mark_sent(self):

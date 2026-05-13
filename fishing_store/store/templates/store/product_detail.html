@@ -10,6 +10,7 @@
                 {% elif product.reel %}Котушка
                 {% else %}Загальне спорядження{% endif %}
             </p>
+            <p><strong>Продавець:</strong> {{ product.seller.display_name }}</p>
         </header>
 
         {% if product.image %}
@@ -43,7 +44,7 @@
         </section>
 
         <footer>
-            {% if product.is_available %}
+            {% if product.is_available and not user.is_admin_member %}
                 <form action="{% url 'store:cart_add' product.id %}" method="post">
                     {% csrf_token %}
                     <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}" style="width: 70px; display: inline-block;">

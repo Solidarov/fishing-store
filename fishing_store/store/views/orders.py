@@ -1,41 +1,99 @@
-from django.views.generic import (
-    ListView,
-    View,
-)
+from django.views.generic import ListView, View, FormView
+from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.shortcuts import redirect
 from django.contrib import messages
 
 from store.services import CartService, OrderService
 from store.models import SubOrder
+from store.forms import OrderCheckoutForm
 
 
-class CheckoutView(LoginRequiredMixin, View):
-    """Оформлення замовлення."""
+class CheckoutView(LoginRequiredMixin, UserPassesTestMixin, FormView):
+    """
+    Оформлення замовлення: введення адреси та підтвердження.
+    """
 
-    def post(self, request, *args, **kwargs):
+    template_name = "store/checkout.html"
+    form_class = OrderCheckoutForm
+    success_url = reverse_lazy("store:order_history")
+
+    def test_func(self):
+        # Чисті адміни без профілю не можуть робити замовлення
+        if self.request.user.is_admin_member and not (
+            hasattr(self.request.user, "customer_profile")
+            or hasattr(self.request.user, "seller_profile")
+        ):
+            return False
+        return True
+
+    def handle_no_permission(self):
+        messages.error(
+            self.request,
+            "Адміністратори не можуть створювати замовлення від свого імені.",
+        )
+        return redirect("store:product_list")
+
+    def get_initial(self):
+        """Передає дані з профілю користувача у форму."""
+        user = self.request.user
+        profile = getattr(user, "customer_profile", None) or getattr(
+            user, "seller_profile", None
+        )
+
+        if profile:
+            return {
+                "phone_number": profile.phone_number,
+                "region": profile.region,
+                "city": profile.city,
+                "street": profile.street,
+                "house_num": profile.house_num,
+                "flat_num": profile.flat_num,
+                "postal_code": profile.postal_code,
+            }
+        return super().get_initial()
+
+    def get(self, request, *args, **kwargs):
+        """GET-запит: показуємо форму, перевіряємо кошик і роль."""
         cart_service = CartService(request)
         if len(cart_service) == 0:
-            messages.error(request, "Ваш кошик порожній.")
-            return redirect("store:cart_detail")
+            messages.warning(request, "Ваш кошик порожній.")
+            return redirect("store:product_list")
+
+        return super().get(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        """POST-запит, форма валідна: створюємо замовлення."""
+        cart_service = CartService(self.request)
+        checkout_data = form.cleaned_data.copy()
+        save_to_profile = checkout_data.pop("save_to_profile", False)
+
         try:
-            order = OrderService.create_order(request.user, cart_service)
-            messages.success(
-                request, f"Ваше замовлення №{order.id} було успішно створено!"
+            order = OrderService.create_order(
+                user=self.request.user,
+                cart_service=cart_service,
+                checkout_data=checkout_data,
+                save_to_profile=save_to_profile,
             )
-            return redirect("store:order_history")
+            messages.success(
+                self.request, f"Ваше замовлення №{order.id} успішно створено!"
+            )
+            return redirect(self.get_success_url())
         except ValueError as e:
-            messages.error(request, str(e))
-            return redirect("store:cart_detail")
+            messages.error(self.request, str(e))
+            return self.form_invalid(form)
 
 
-class CustomerOrderListView(LoginRequiredMixin, ListView):
+class CustomerOrderListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     """
     Представлення для перегляду історії замовлень покупця.
     """
 
     template_name = "store/order_history.html"
     context_object_name = "orders"
+
+    def test_func(self):
+        return not self.request.user.is_admin_member
 
     def get_queryset(self):
         return OrderService.get_customer_orders(self.request.user)

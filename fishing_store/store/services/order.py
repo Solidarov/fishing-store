@@ -20,10 +20,14 @@ class OrderService:
     """
 
     @staticmethod
-    def create_order(user, cart_service: CartService):
+    def create_order(
+        user, cart_service: CartService, checkout_data: dict, save_to_profile: bool
+    ):
         """
         Створює замовлення з товарів у кошику.
-        - Створює `Order` та `SubOrder` для кожного продавця.
+        - Зберігає адресу доставки в `Order`.
+        - Опціонально оновлює профіль користувача.
+        - Створює `SubOrder` для кожного продавця.
         - Зменшує залишки на складі.
         - Очищує кошик.
         Все виконується в атомній транзакції.
@@ -33,71 +37,109 @@ class OrderService:
 
         all_cart_items = list(cart_service)
 
-        # Швидка перевірка наявності достатньої к-сті товару (для UI, не гарантовано)
-        for item in all_cart_items:
+        # 1. Попередня перевірка залишків
+        OrderService._check_initial_stock(all_cart_items)
+
+        with transaction.atomic():
+            # 2. Блокування товарів та фінальна перевірка
+            products = OrderService._lock_and_verify_stock(all_cart_items)
+
+            # 3. Створити головне замовлення
+            order = OrderService._create_main_order(user, cart_service, checkout_data)
+
+            # 4. Створити підзамовлення та елементи замовлення
+            OrderService._create_sub_orders_and_items(order, all_cart_items)
+
+            # 5. Оновити склад
+            OrderService._deduct_stock(products, all_cart_items)
+
+            # 6. Оновити профіль користувача за потреби
+            if save_to_profile:
+                OrderService._update_user_profile(user, checkout_data)
+
+        # 7. Очистити кошик після успішної транзакції
+        cart_service.clear()
+        return order
+
+    @staticmethod
+    def _check_initial_stock(cart_items):
+        """Швидка перевірка наявності достатньої к-сті товару (для UI)."""
+        for item in cart_items:
             product = item["product"]
             if product.stock < item["quantity"]:
                 raise ValueError(f"Недостатньо товару '{product.name}' на складі.")
 
-        with transaction.atomic():
-            # 1. Зарезервувати продукти, що в кошику для транзакції
-            products = Product.objects.select_for_update().filter(
-                pk__in=[item["product"].pk for item in all_cart_items]
+    @staticmethod
+    def _lock_and_verify_stock(cart_items):
+        """Зарезервувати продукти та провести гарантовану перевірку залишків."""
+        products_pks = [item["product"].pk for item in cart_items]
+        products = Product.objects.select_for_update().filter(pk__in=products_pks)
+
+        quantity_by_pk = {item["product"].pk: item["quantity"] for item in cart_items}
+        for product in products:
+            if product.stock < quantity_by_pk[product.pk]:
+                raise ValueError(f"Недостатньо товару '{product.name}' на складі.")
+        return products
+
+    @staticmethod
+    def _create_main_order(user, cart_service, checkout_data):
+        """Створити головне замовлення з даними з форми."""
+        order_data = {
+            "user": user,
+            "total_price": cart_service.get_total_price(),
+            **checkout_data,
+        }
+        return Order.objects.create(**order_data)
+
+    @staticmethod
+    def _create_sub_orders_and_items(order, cart_items):
+        """Групує товари за продавцем та створює підзамовлення та їх елементи."""
+        items_by_seller = defaultdict(list)
+        for item in cart_items:
+            items_by_seller[item["product"].seller].append(item)
+
+        order_items_to_create = []
+
+        for seller, items in items_by_seller.items():
+            sub_order_total = sum(item["total_price"] for item in items)
+            sub_order = SubOrder.objects.create(
+                order=order, seller=seller, total_price=sub_order_total
             )
 
-            # 2. Повторна перевірка товару вже з блокуванням (гарантована)
-            quantity_by_pk = {
-                item["product"].pk: item["quantity"] for item in all_cart_items
-            }
-            for product in products:
-                if product.stock < quantity_by_pk[product.pk]:
-                    raise ValueError(f"Недостатньо товару '{product.name}' на складі.")
-
-            # 3. Створити головне замовлення
-            order = Order.objects.create(
-                user=user, total_price=cart_service.get_total_price()
-            )
-
-            # 4. Згрупувати товари в кошику за продавцем
-            items_by_seller = defaultdict(list)
-            for item in all_cart_items:
-                items_by_seller[item["product"].seller].append(item)
-
-            # 5. Створити підзамовлення для кожного продавця
-            order_items_to_create = []
-
-            for seller, items in items_by_seller.items():
-                sub_order_total = sum(item["total_price"] for item in items)
-                sub_order = SubOrder.objects.create(
-                    order=order, seller=seller, total_price=sub_order_total
+            for item in items:
+                product = item["product"]
+                order_items_to_create.append(
+                    OrderItem(
+                        sub_order=sub_order,
+                        product=product,
+                        product_name=product.name,
+                        price=product.price,
+                        quantity=item["quantity"],
+                    )
                 )
 
-                # 6. Створити елементи замовлення
-                for item in items:
-                    product = item["product"]
-                    quantity = item["quantity"]
+        OrderItem.objects.bulk_create(order_items_to_create)
 
-                    order_items_to_create.append(
-                        OrderItem(
-                            sub_order=sub_order,
-                            product=product,
-                            product_name=product.name,
-                            price=product.price,
-                            quantity=quantity,
-                        )
-                    )
+    @staticmethod
+    def _deduct_stock(products, cart_items):
+        """Атомарне зменшення залишків на складі."""
+        quantity_by_pk = {item["product"].pk: item["quantity"] for item in cart_items}
+        for product in products:
+            product.stock = F("stock") - quantity_by_pk[product.pk]
 
-            OrderItem.objects.bulk_create(order_items_to_create)
+        Product.objects.bulk_update(products, ["stock"])
 
-            # 7. Оновити склад
-            for product in products:
-                product.stock = F("stock") - quantity_by_pk[product.pk]
-
-            Product.objects.bulk_update(products, ["stock"])
-
-        # 8. Очистити кошик після успішної транзакції
-        cart_service.clear()
-        return order
+    @staticmethod
+    def _update_user_profile(user, checkout_data):
+        """Оновлює профіль користувача новими даними адреси."""
+        profile = getattr(user, "customer_profile", None) or getattr(
+            user, "seller_profile", None
+        )
+        if profile:
+            for field, value in checkout_data.items():
+                if hasattr(profile, field):
+                    setattr(profile, field, value)
+            profile.save()
 
     @staticmethod
     def change_sub_order_status(sub_order_id, user, new_status):
@@ -106,7 +148,7 @@ class OrderService:
         Якщо статус змінюється на 'Canceled', товари повертаються на склад.
         """
         try:
-            sub_order = SubOrder.objects.get(pk=sub_order_id)
+            sub_order = SubOrder.objects.select_related("seller").get(pk=sub_order_id)
         except SubOrder.DoesNotExist:
             raise ValueError("Підзамовлення не знайдено.")
 
@@ -135,7 +177,7 @@ class OrderService:
             sub_order.cancel()
             items_to_update = []
             # Повернення товарів на склад за допомогою атомарних операцій
-            for item in sub_order.items.all():
+            for item in sub_order.items.select_related("product").all():
                 if item.product:
                     item.product.stock = F("stock") + item.quantity
                     items_to_update.append(item.product)
@@ -182,6 +224,7 @@ class OrderService:
         """Повертає всі підзамовлення для вказаного продавця."""
         return (
             SubOrder.objects.filter(seller=user)
+            .select_related("order__user")
             .prefetch_related("items__product")
             .order_by("-created_at")
         )

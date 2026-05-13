@@ -1,3 +1,4 @@
+from django.db.models import Q
 from store.models import (
     Product,
     StockAlert,
@@ -13,11 +14,50 @@ class ProductService:
     """
 
     @staticmethod
-    def get_catalog_products():
-        """Повертає товари для публічного каталогу (не видалені та активні)."""
-        return Product.objects.filter(deleted_at__isnull=True, is_active=True).order_by(
-            "-created_at"
-        )
+    def get_catalog_products(filters=None):
+        """
+        Повертає товари для публічного каталогу (не видалені та активні) з урахуванням фільтрів.
+        """
+        queryset = Product.objects.filter(
+            deleted_at__isnull=True, is_active=True
+        ).select_related("seller", "seller__seller_profile")
+
+        if filters:
+            search = filters.get("search")
+            if search:
+                queryset = queryset.filter(
+                    Q(name__icontains=search) | Q(description__icontains=search)
+                )
+
+            category = filters.get("category")
+            if category == "other":
+                # Фільтруємо продукти, які не належать до жодного з відомих підкласів (інші товари)
+                for cls in Product.__subclasses__():
+                    queryset = queryset.filter(
+                        **{f"{cls._meta.model_name}__isnull": True}
+                    )
+            elif category:
+                # Динамічна фільтрація за ім'ям моделі підкласу
+                queryset = queryset.filter(**{f"{category}__isnull": False})
+
+            min_price = filters.get("min_price")
+            if min_price:
+                queryset = queryset.filter(price__gte=min_price)
+
+            max_price = filters.get("max_price")
+            if max_price:
+                queryset = queryset.filter(price__lte=max_price)
+
+            manufacturer = filters.get("manufacturer")
+            if manufacturer:
+                queryset = queryset.filter(
+                    Q(seller__seller_profile__store_name__icontains=manufacturer)
+                    | Q(seller__seller_profile__first_name__icontains=manufacturer)
+                    | Q(seller__seller_profile__last_name__icontains=manufacturer)
+                    | Q(seller__username__icontains=manufacturer)
+                )
+
+        return queryset.order_by("-created_at")
 
     @staticmethod
     def get_seller_products(user):
