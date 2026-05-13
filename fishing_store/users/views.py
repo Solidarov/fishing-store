@@ -60,6 +60,10 @@ class UserLogoutView(LogoutView):
     next_page = reverse_lazy("users:login")
 
 
+class LogoutConfirmView(LoginRequiredMixin, TemplateView):
+    template_name = "users/logout_confirm.html"
+
+
 class ProfileView(LoginRequiredMixin, TemplateView):
     """
     Відображення профілю користувача.
