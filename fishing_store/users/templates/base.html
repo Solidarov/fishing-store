@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="uk">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,12 +8,27 @@
     <title>Fishing Store</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
     <style>
-        .success { background-color: var(--pico-ins-color); border-color: var(--pico-form-element-valid-border-color); }
-        .error { background-color: var(--pico-del-color); border-color: var(--pico-form-element-invalid-border-color); }
-        .warning { background-color: #fff3cd; border-color: #ffeeba; }
-        .info { background-color: var(--pico-primary-background); }
+        .success {
+            background-color: var(--pico-ins-color);
+            border-color: var(--pico-form-element-valid-border-color);
+        }
+
+        .error {
+            background-color: var(--pico-del-color);
+            border-color: var(--pico-form-element-invalid-border-color);
+        }
+
+        .warning {
+            background-color: #fff3cd;
+            border-color: #ffeeba;
+        }
+
+        .info {
+            background-color: var(--pico-primary-background);
+        }
     </style>
 </head>
+
 <body>
     <header class="container">
         <nav>
@@ -26,46 +42,46 @@
             <ul>
                 <li><a href="{% url 'store:product_list' %}">Каталог</a></li>
                 {% if not user.is_admin_member %}
-                    <li>
-                        <a href="{% url 'store:cart_detail' %}">
-                            Кошик 
-                            {% if cart %}
-                                ({{ cart|length }})
-                            {% else %}
-                                (0)
-                            {% endif %}
-                        </a>
-                    </li>
+                <li>
+                    <a href="{% url 'store:cart_detail' %}">
+                        Кошик
+                        {% if cart %}
+                        ({{ cart|length }})
+                        {% else %}
+                        (0)
+                        {% endif %}
+                    </a>
+                </li>
                 {% endif %}
-                {% if user.is_authenticated %}    
-                    <li>
-                        <details class="dropdown">
-                            <summary>
-                                {{user.username}}
-                            </summary>
-                            <ul dir="rtl">
-                                <li><a href="{% url 'users:profile' %}">Профіль</a></li>
-                                
-                                {% if user.role == 'ADMIN' %}
-                                    <li><a href="{% url 'admin:index' %}">Адмін</a></li>
-                                {% endif %}
-                                
-                                {% if user.role != 'ADMIN' %}
-                                    <li><a href="{% url 'store:order_history' %}">Мої Замовлення</a></li>
-                                {% endif %}
+                {% if user.is_authenticated %}
+                <li>
+                    <details class="dropdown">
+                        <summary>
+                            {{user.username}}
+                        </summary>
+                        <ul dir="rtl">
+                            <li><a href="{% url 'users:profile' %}">Профіль</a></li>
 
-                                {% if user.role == 'SELLER' %}
-                                    <li><a href="{% url 'store:seller_dashboard' %}">Продажі</a></li>
-                                {% endif %}
-                                <li>
-                                    <a href="{% url 'users:logout_confirm' %}" style="color: red;">Вийти</a>
-                                </li>
-                            </ul>
-                        </details>
-                    </li>
+                            {% if user.role == 'ADMIN' %}
+                            <li><a href="{% url 'admin:index' %}">Адмін</a></li>
+                            {% endif %}
+
+                            {% if user.role != 'ADMIN' %}
+                            <li><a href="{% url 'store:order_history' %}">Мої Замовлення</a></li>
+                            {% endif %}
+
+                            {% if user.role == 'SELLER' %}
+                            <li><a href="{% url 'store:seller_dashboard' %}">Продажі</a></li>
+                            {% endif %}
+                            <li>
+                                <a href="{% url 'users:logout_confirm' %}" style="color: red;">Вийти</a>
+                            </li>
+                        </ul>
+                    </details>
+                </li>
                 {% else %}
-                    <li><a href="{% url 'users:login' %}">Увійти</a></li>
-                    <li><a href="{% url 'users:register' %}">Реєстрація</a></li>
+                <li><a href="{% url 'users:login' %}">Увійти</a></li>
+                <li><a href="{% url 'users:register' %}">Реєстрація</a></li>
                 {% endif %}
             </ul>
         </nav>
@@ -73,9 +89,9 @@
 
     <main class="container">
         {% if messages %}
-            {% for message in messages %}
-                    <article class="{{message.tags}}">{{ message }}</article>
-            {% endfor %}
+        {% for message in messages %}
+        <article class="{{message.tags}}">{{ message }}</article>
+        {% endfor %}
         {% endif %}
 
         {% block content %}{% endblock %}
@@ -86,4 +102,5 @@
         <p><small> 2026 Fishing Store MVP</small></p>
     </footer>
 </body>
+
 </html>
