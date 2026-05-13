@@ -95,3 +95,8 @@ class SellerProfileForm(forms.ModelForm):
             "flat_num",
             "postal_code",
         )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["store_name"].required = True
+        self.fields["store_name"].help_text = "Назва вашого магазину, яку бачитимуть покупці"

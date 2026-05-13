@@ -10,6 +10,7 @@
                 {% elif product.reel %}Котушка
                 {% else %}Загальне спорядження{% endif %}
             </p>
+            <p><strong>Продавець:</strong> {{ product.seller.display_name }}</p>
         </header>
 
         {% if product.image %}

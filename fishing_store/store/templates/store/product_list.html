@@ -30,6 +30,7 @@
                     <img src="{{ product.image.url }}" alt="{{ product.name }}" style="max-width: 100%; border-radius: 4px;">
                 {% endif %}
                 <h3>{{ product.name }}</h3>
+                <p><small>Продавець: <strong>{{ product.seller.display_name }}</strong></small></p>
                 <p>{{ product.description|truncatewords:20 }}</p>
                 <p><strong>Price: ${{ product.price }}</strong></p>
                 

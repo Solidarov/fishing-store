@@ -10,10 +10,35 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.http import Http404
+from django.contrib import messages
 
 from store.models import FishingRod, Reel
 from store.services import ProductService, OrderService
 from store.forms import FishingRodForm, ReelForm, ProductBaseForm, ProductFilterForm
+
+
+class StoreNameRequiredMixin(UserPassesTestMixin):
+    """Міксин для перевірки наявності назви магазину у продавця."""
+
+    def test_func(self):
+        user = self.request.user
+        if not user.is_authenticated:
+            return False
+        if user.is_seller_member:
+            try:
+                return bool(user.seller_profile.store_name)
+            except AttributeError:
+                return False
+        return True
+
+    def handle_no_permission(self):
+        if self.request.user.is_authenticated and self.request.user.is_seller_member:
+            messages.warning(
+                self.request,
+                "Будь ласка, вкажіть назву вашого магазину у профілі перед додаванням товарів.",
+            )
+            return redirect("users:profile_edit")
+        return super().handle_no_permission()
 
 
 class ProductListView(ListView):
@@ -61,17 +86,26 @@ class SellerDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView)
         context["alerts"] = ProductService.get_active_alerts(user)
         context["products"] = ProductService.get_seller_products(user)
         context["sub_orders"] = OrderService.get_seller_orders(user)
+
+        # Перевірка наявності назви магазину
+        has_store_name = False
+        try:
+            has_store_name = bool(user.seller_profile.store_name)
+        except AttributeError:
+            pass
+        context["missing_store_name"] = not has_store_name
+
         return context
 
 
-class ProductCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+class ProductCreateView(LoginRequiredMixin, StoreNameRequiredMixin, CreateView):
     """Створення товару з авто-прив'язкою продавця."""
 
     template_name = "store/product_form.html"
     success_url = reverse_lazy("store:seller_dashboard")
 
     def test_func(self):
-        return self.request.user.is_seller_member
+        return super().test_func() and self.request.user.is_seller_member
 
     def get_form_class(self):
         product_type = self.request.GET.get("type")
@@ -91,13 +125,15 @@ class ProductCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         return super().form_valid(form)
 
 
-class ProductUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+class ProductUpdateView(LoginRequiredMixin, StoreNameRequiredMixin, UpdateView):
     """Редагування товару з перевіркою власності."""
 
     template_name = "store/product_form.html"
     success_url = reverse_lazy("store:seller_dashboard")
 
     def test_func(self):
+        if not super().test_func():
+            return False
         obj = self.get_object()
         if obj is None:
             return False

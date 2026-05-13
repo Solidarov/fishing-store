@@ -112,6 +112,7 @@ DJANGO_SUPERUSER_USERNAME = os.environ.get("DJANGO_SUPERUSER_USERNAME", "pablo")
 DJANGO_SUPERUSER_EMAIL = os.environ.get("DJANGO_SUPERUSER_EMAIL", "admin@example.com")
 DJANGO_SUPERUSER_PASSWORD = os.environ.get("DJANGO_SUPERUSER_PASSWORD")
 
+LOGIN_URL = "users:login"
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
 

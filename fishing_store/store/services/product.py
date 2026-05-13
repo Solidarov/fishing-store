@@ -18,7 +18,9 @@ class ProductService:
         """
         Повертає товари для публічного каталогу (не видалені та активні) з урахуванням фільтрів.
         """
-        queryset = Product.objects.filter(deleted_at__isnull=True, is_active=True)
+        queryset = Product.objects.filter(
+            deleted_at__isnull=True, is_active=True
+        ).select_related("seller", "seller__seller_profile")
 
         if filters:
             search = filters.get("search")
@@ -49,8 +51,9 @@ class ProductService:
             manufacturer = filters.get("manufacturer")
             if manufacturer:
                 queryset = queryset.filter(
-                    Q(seller__first_name__icontains=manufacturer)
-                    | Q(seller__last_name__icontains=manufacturer)
+                    Q(seller__seller_profile__store_name__icontains=manufacturer)
+                    | Q(seller__seller_profile__first_name__icontains=manufacturer)
+                    | Q(seller__seller_profile__last_name__icontains=manufacturer)
                     | Q(seller__username__icontains=manufacturer)
                 )
 

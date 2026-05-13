@@ -4,8 +4,16 @@
 <section>
     <header>
         <h1>Панель продавця</h1>
-        <p>Вітаємо, {{ user.get_full_name }}. Тут ви можете керувати асортиментом та замовленнями.</p>
+        <p>Вітаємо, {{ user.display_name }}. Тут ви можете керувати асортиментом та замовленнями.</p>
     </header>
+
+    {% if missing_store_name %}
+    <aside style="background-color: #ffe0e0; border-left: 5px solid #ff0000; padding: 15px; margin-bottom: 20px;">
+        <h4 style="color: #ff0000; margin-top: 0;">⚠️ Відсутня назва магазину!</h4>
+        <p>Ваші товари не відображаються належним чином, і ви не зможете додавати нові товари, поки не вкажете назву магазину.</p>
+        <a href="{% url 'users:profile_edit' %}" role="button">Встановити назву магазину</a>
+    </aside>
+    {% endif %}
 
     <section>
         <header>

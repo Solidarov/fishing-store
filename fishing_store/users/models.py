@@ -75,6 +75,33 @@ class CustomUser(UserSoftDeleteMixin, AbstractUser):
             self.role = self.Role.ADMIN
         return super().save(*args, **kwargs)
 
+    @property
+    def display_name(self):
+        """
+        Повертає ім'я для відображення:
+        - Назва магазину для продавців (якщо вказано)
+        - Повне ім'я профілю (якщо вказано)
+        - Юзернейм (як fallback)
+        """
+        if self.is_seller_member:
+            try:
+                if self.seller_profile.store_name:
+                    return self.seller_profile.store_name
+            except (AttributeError, SellerProfile.DoesNotExist):
+                pass
+
+        # Спроба взяти ім'я з профілю (Customer або Seller)
+        profile = None
+        if hasattr(self, "customer_profile"):
+            profile = self.customer_profile
+        elif hasattr(self, "seller_profile"):
+            profile = self.seller_profile
+
+        if profile and profile.first_name and profile.last_name:
+            return f"{profile.first_name} {profile.last_name}"
+
+        return self.username
+
     def __str__(self):
         """
         Стандартинй метод python для кращого представлення даних
