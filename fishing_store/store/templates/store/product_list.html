@@ -3,9 +3,25 @@
 {% block content %}
 <section>
     <header>
-        <h2>Product Catalog</h2>
-        <p>Explore our wide range of fishing equipment.</p>
+        <h2>Каталог товарів</h2>
+        <p>Досліджуйте наш широкий асортимент рибальського спорядження.</p>
     </header>
+
+    <details open>
+        <summary>Пошук та фільтри</summary>
+        <form method="get" style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end; margin-bottom: 2rem;">
+            {% for field in filter_form %}
+                <div style="flex: 1 1 200px;">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                </div>
+            {% endfor %}
+            <div style="flex: 0 0 auto;">
+                <button type="submit">Застосувати</button>
+                <a href="{% url 'store:product_list' %}" class="button secondary">Скинути</a>
+            </div>
+        </form>
+    </details>
 
     <div style="display: flex; flex-wrap: wrap; gap: 20px;">
         {% for product in products %}

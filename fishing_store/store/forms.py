@@ -14,7 +14,6 @@ class OrderCheckoutForm(forms.ModelForm):
         fields = [
             "phone_number",
             "region",
-
             "city",
             "street",
             "house_num",
@@ -82,3 +81,48 @@ class ReelForm(forms.ModelForm):
             "gear_ratio",
             "bearings_count",
         ]
+
+
+class ProductFilterForm(forms.Form):
+    """Форма для фільтрації та пошуку товарів у каталозі."""
+
+    search = forms.CharField(
+        required=False,
+        label="Пошук",
+        widget=forms.TextInput(attrs={"placeholder": "Назва або опис..."}),
+    )
+    category = forms.ChoiceField(
+        choices=[], required=False, label="Категорія"
+    )
+    min_price = forms.DecimalField(
+        required=False,
+        min_value=0,
+        label="Ціна від",
+        widget=forms.NumberInput(attrs={"placeholder": "Мін. ціна"}),
+    )
+    max_price = forms.DecimalField(
+        required=False,
+        min_value=0,
+        label="Ціна до",
+        widget=forms.NumberInput(attrs={"placeholder": "Макс. ціна"}),
+    )
+    manufacturer = forms.CharField(
+        required=False,
+        label="Виробник (Продавець)",
+        widget=forms.TextInput(attrs={"placeholder": "Ім'я продавця"}),
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["category"].choices = self._get_dynamic_choices()
+
+    @staticmethod
+    def _get_dynamic_choices():
+        """Динамічно генерує список категорій на основі підкласів Product."""
+        choices = [("", "Всі категорії")]
+        # Використовуємо інтроспекцію підкласів для справжнього OOP підходу
+        for cls in Product.__subclasses__():
+            choices.append((cls._meta.model_name, cls._meta.verbose_name_plural))
+        choices.append(("other", "Інше"))
+        return choices
+

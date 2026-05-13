@@ -13,17 +13,25 @@ from django.http import Http404
 
 from store.models import FishingRod, Reel
 from store.services import ProductService, OrderService
-from store.forms import FishingRodForm, ReelForm, ProductBaseForm
+from store.forms import FishingRodForm, ReelForm, ProductBaseForm, ProductFilterForm
 
 
 class ProductListView(ListView):
-    """Публічний каталог товарів."""
+    """Публічний каталог товарів з підтримкою пошуку та фільтрації."""
 
     template_name = "store/product_list.html"
     context_object_name = "products"
 
     def get_queryset(self):
+        self.filter_form = ProductFilterForm(self.request.GET)
+        if self.filter_form.is_valid():
+            return ProductService.get_catalog_products(self.filter_form.cleaned_data)
         return ProductService.get_catalog_products()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["filter_form"] = self.filter_form
+        return context
 
 
 class ProductDetailView(DetailView):
