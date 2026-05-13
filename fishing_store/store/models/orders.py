@@ -23,6 +23,8 @@ class Order(models.Model):
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата оновлення")
 
     # Адресні дані
+    first_name = models.CharField(max_length=50, verbose_name="Ім'я користувача")
+    last_name = models.CharField(max_length=100, verbose_name="Прізвище користувача")
     phone_number = models.CharField(max_length=20, verbose_name="Номер телефону")
     region = models.CharField(max_length=50, verbose_name="Область")
     city = models.CharField(max_length=50, verbose_name="Місто")

@@ -89,6 +89,12 @@ class BaseProfile(models.Model):
     Додає базові поля до всіх моделей, що її наслідують
     """
 
+    first_name = models.CharField(
+        max_length=50, blank=True, null=True, verbose_name="Ім'я користувача"
+    )
+    last_name = models.CharField(
+        max_length=100, blank=True, null=True, verbose_name="Прізвище користувача"
+    )
     phone_number = models.CharField(
         max_length=20,
         blank=True,

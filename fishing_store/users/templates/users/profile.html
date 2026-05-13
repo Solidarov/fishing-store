@@ -14,6 +14,8 @@
             {% if user.role == "SELLER" %}
                 <p><strong>Назва магазину:</strong> {{ profile.store_name|default:"Не вказано" }}</p>
             {% endif %}
+            <p><strong>Ім'я:</strong> {{ profile.first_name|default:"Не вказано" }}</p>
+            <p><strong>Прізвище:</strong> {{ profile.last_name|default:"Не вказано" }}</p>
             <p><strong>Номер телефону:</strong> {{ profile.phone_number|default:"Не вказано" }}</p>
             <p><strong>Область:</strong> {{ profile.region|default:"Не вказано" }}</p>
             <p><strong>Місто:</strong> {{ profile.city|default:"Не вказано" }}</p>

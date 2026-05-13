@@ -64,6 +64,8 @@ class CustomerProfileForm(forms.ModelForm):
     class Meta:
         model = CustomerProfile
         fields = (
+            "first_name",
+            "last_name",
             "phone_number",
             "region",
             "city",
@@ -83,6 +85,8 @@ class SellerProfileForm(forms.ModelForm):
         model = SellerProfile
         fields = (
             "store_name",
+            "first_name",
+            "last_name",
             "phone_number",
             "region",
             "city",

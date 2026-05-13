@@ -12,6 +12,8 @@ class OrderCheckoutForm(forms.ModelForm):
     class Meta:
         model = Order
         fields = [
+            "first_name",
+            "last_name",
             "phone_number",
             "region",
             "city",
@@ -21,6 +23,8 @@ class OrderCheckoutForm(forms.ModelForm):
             "postal_code",
         ]
         labels = {
+            "first_name": "Ім'я",
+            "last_name": "Прізвище",
             "phone_number": "Номер телефону",
             "region": "Область",
             "city": "Місто/Село",
@@ -91,9 +95,7 @@ class ProductFilterForm(forms.Form):
         label="Пошук",
         widget=forms.TextInput(attrs={"placeholder": "Назва або опис..."}),
     )
-    category = forms.ChoiceField(
-        choices=[], required=False, label="Категорія"
-    )
+    category = forms.ChoiceField(choices=[], required=False, label="Категорія")
     min_price = forms.DecimalField(
         required=False,
         min_value=0,
@@ -125,4 +127,3 @@ class ProductFilterForm(forms.Form):
             choices.append((cls._meta.model_name, cls._meta.verbose_name_plural))
         choices.append(("other", "Інше"))
         return choices
-

@@ -41,7 +41,7 @@
                 <tr>
                     <td>{{ sub_order.id }}</td>
                     <td>
-                        {{ sub_order.order.user.username }}<br>
+                        {{ sub_order.order.user.customer_profile.first_name }} {{sub_order.order.user.customer_profile.last_name}}<br>
                         <small>{{ sub_order.order.phone_number }}</small>
                     </td>
                     <td><small>{{ sub_order.delivery_address }}</small></td>
