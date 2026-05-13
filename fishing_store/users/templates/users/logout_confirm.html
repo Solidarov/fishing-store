@@ -5,16 +5,18 @@
     <header>
         <h3>Вихід із системи</h3>
     </header>
-    
+
     <p>Ви впевнені, що хочете вийти зі свого акаунту?</p>
-    
+
     <div>
         <form action="{% url 'users:logout' %}" method="post">
-            {% csrf_token %}
-            <button type="submit" class="contrast">Так, вийти</button>
-            <a href="{% url 'store:product_list' %}" role="button" class="secondary">Скасувати</a>
+            <fieldset class="grid">
+                {% csrf_token %}
+                <input type="submit" value="Так, вийти" style="color: red; border-color: red;" class="outline" />
+                <input type="button" value="Скасувати" class="outline secondary"
+                    onclick="location.href='{% url 'store:product_list' %}'" />
+            </fieldset>
         </form>
-        
     </div>
 </article>
 {% endblock %}
