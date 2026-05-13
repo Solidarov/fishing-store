@@ -14,7 +14,7 @@ Will be shown soon...
    - Instant login for Customers upon signup and "Pending Activation" state for Sellers.
 - **Unified Profile Interface:** A dynamic multi-form view that allows users to update both account credentials and role-specific metadata (addresses, store names) in one place.
 
-### Store system (work in progress):
+### Store system:
 - **Product Hierarchy (MTI):** Uses Django multi-table inheritance for specialized product types (Rods, Reels) with a shared base model.
 - **Soft Delete Mechanism:** Implements a Mixin for safe data removal, allowing products to be deactivated and restored.
 - **Seller Dashboard:** Dedicated interface for sellers to manage inventory and monitor product status.
@@ -23,6 +23,10 @@ Will be shown soon...
 - **Session-based Cart System:** A robust shopping cart implementation using Django sessions to track items for both anonymous and logged-in users.
 - **Intelligent Cart Merging:** Seamlessly preserves guest shopping progress by merging session data upon login or registration using the Observer pattern (Signals).
 - **Cart Validation Logic:** Centralized stock and availability checks within the `CartService` to maintain strict business rules during checkout preparation.
+- **Comprehensive Order Lifecycle:** Implementation of a multi-stage order process (Order -> SubOrder -> OrderItem) with support for multi-seller orders.
+- **State Pattern for Orders:** Strict management of order statuses (Pending, Sent, Completed, Canceled) with validation of transitions and automated stock restoration.
+- **Atomic Stock Management:** Uses pessimistic locking (`select_for_update`) and atomic database operations to ensure stock integrity during high-concurrency checkout.
+- **Integrated Delivery System:** Captures and stores detailed delivery information with optional synchronization to the user's profile.
 
 ## How to run localy
 1. Prerequisties (Linux)
