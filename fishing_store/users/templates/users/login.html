@@ -1,11 +1,32 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h2>Login</h2>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Login</button>
-    </form>
-    <p>Don't have an account? <a href="{% url 'users:register' %}">Register here</a></p>
+<div class="grid">
+    <div></div>
+    <div>
+        <h2>Увійти</h2>
+        <form method="post">
+            {% csrf_token %}
+            {% for field in form %}
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}
+            {% for error in field.errors %}
+            <small style="color: red;">{{ error }}</small>
+            {% endfor %}
+            {% endif %}
+            {% endfor %}
+
+            {% if form.non_field_errors %}
+            {% for error in form.non_field_errors %}
+            <p role="alert">{{ error }}</p>
+            {% endfor %}
+            {% endif %}
+
+            <button type="submit">Вхід</button>
+        </form>
+        <p>Не маєш акаунту? <a href="{% url 'users:register' %}">Реєструйся тут</a></p>
+    </div>
+    <div></div>
+</div>
 {% endblock %}
