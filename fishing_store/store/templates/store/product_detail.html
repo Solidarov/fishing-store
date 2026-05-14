@@ -1,63 +1,74 @@
 {% extends "base.html" %}
 
 {% block content %}
-<section>
-    <article>
-        <header>
-            <h1>{{ product.name }}</h1>
-            <p><strong>Категорія:</strong> 
-                {% if product.fishingrod %}Вудлище
-                {% elif product.reel %}Котушка
-                {% else %}Загальне спорядження{% endif %}
-            </p>
-            <p><strong>Продавець:</strong> {{ product.seller.display_name }}</p>
-        </header>
-
+<div class="grid">
+    <div>
         {% if product.image %}
-            <img src="{{ product.image.url }}" alt="{{ product.name }}">
+        <img src="{{ product.image.url }}" alt="{{ product.name }}">
+        {% else %}
+        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZAAAAEsCAYAAADtt+XCAAAZfElEQVR4Xu3dibd1Yx0H8C1KklKKDI2a0EqsBoqi1UySpAwNVv6rDAulQlaGIqWiWaQoUSJJhgZTkrn13Wvdd+277z73nPvc1/s+z/V51npX8p7nnN/5/LbzPfvZw9nmmmuuebozCBAgQIDAGgW2ESBrFPNwAgQIEOgFBIgNgQABAgSKBARIEZtJBAgQICBAbAMECBAgUCQgQIrYTCJAgAABAWIbIECAAIEiAQFSxGYSAQIECAgQ2wABAgQIFAkIkCI2kwgQIEBAgNgGCBAgQKBIQIAUsZlEgAABAgLENkCAAAECRQICpIjNJAIECBAQILYBAgQIECgSECBFbCYRIECAgACxDRAgQIBAkYAAKWIziQABAgQEiG2AAAECBIoEBEgRm0kECBAgIEBsAwQIECBQJCBAithMIkCAAAEBYhsgQIAAgSIBAVLEZhIBAgQICBDbAAECBAgUCQiQIjaTCBAgQECA2AYIECBAoEhAgBSxmUSAAAECAsQ2QIAAAQJFAgKkiM0kAgQIEBAgtgECBAgQKBIQIEVsJhEgQICAALENECBAgECRgAApYjOJAAECBASIbYAAAQIEigQESBGbSQQIECAgQGwDBAgQIFAkIECK2EwiQIAAAQFiGyBAgACBIgEBUsRmEgECBAgIENsAAQIECBQJCJAiNpMIECBAQIDYBggQIECgSECAFLGZRIAAAQICxDZAgAABAkUCAqSIzSQCBAgQECC2AQIECBAoEhAgRWwmESBAgIAAsQ0QIECAQJGAACliM4kAAQIEBIhtgAABAgSKBARIEZtJBAgQICBAbAMECBAgUCQgQIrYTCJAgAABAWIbIECAAIEiAQFSxGYSAQIECAgQ2wABAgQIFAkIkCI2kwgQIEBAgNgGCBAgQKBIQIAUsZlEgAABAgLENkCAAAECRQICpIjNJAIECBAQILYBAgQIECgSECBFbCYRIECAgACxDRAgQIBAkYAAKWIziQABAgQEiG2AAAECBIoEBEgRm0kECBAgIEBsAwQIECBQJCBAithMIkCAAAEBYhsgQIAAgSIBAVLEZhIBAgQICBDbAAECBAgUCQiQIjaTCBAgQECA2AYIECBAoEhAgBSxmUSAAAECAsQ2QIAAAQJFAgKkiM0kAgQIEBAgtgECBAgQKBIQIEVsJhEgQICAALENECBAgECRgAApYjOJAAECBASIbYAAAQIEigQESBGbSQQIECAgQGwDBAgQIFAkIECK2EwiQIAAAQFiGyBAgACBIgEBUsRmEgECBAgIENsAAQIECBQJCJAiNpMIECBAQIDYBggQIECgSECAFLGZRIAAAQICxDZAgAABAkUCAqSIzSQCBAgQECC2AQIECBAoEhAgRWwmESBAgIAAsQ0QIECAQJGAACliM4kAAQIEBIhtgAABAgSKBARIEZtJBAgQICBAbAMECBAgUCQgQIrYTCJAgAABAWIbIECAAIEiAQFSxGYSAQIECAgQ2wABAgQIFAkIkCI2kwgQIEBAgNgGCBAgQKBIQIAUsZlEgAABAgLENkCAAAECRQICpIjNJAIECBAQILYBAgQIECgSECBFbCYRIECAgACxDRAgQIBAkYAAKWIziQABAgQEiG2AAAECBIoEBEgRm0kECBAgIEBsAwQIECBQJCBAithMIkCAAAEBYhsgQIAAgSIBAVLEZhIBAgQICBDbAAECBAgUCQiQIjaTCBAgQECA2AYIECBAoEhAgBSxmUSAAAECAsQ2QIAAAQJFAgKkiM0kAgQIEBAgtgECBAgQKBIQIEVsJhEgQICAALENECBAgECRgAApYjOJAAECBASIbYAAAQIEigQESBGbSQQIECAgQGwDBAgQIFAkIECK2EwiQIAAAQGyAbeBu+++u7vooosm39mRRx7Z7bHHHgu967POOqv73//+t+mxO+64Y3fiiScuNHdLP+jXv/51d8011yx72ec973ndF7/4xS1ditcj8KwRECAbsNWrBcguu+zSHXPMMd0222wz950LkLlEHkDgWS0gQDZg+1cLkLzd973vfd2b3vSmue9cgMwl8gACz2oBAbIB2z8vQF7wghd0n/nMZ7rnPve5q757AbIBNw5vicBmFBAgmxGzlqeaFyCp84ADDuje8Y53CJBamqYOAg0KCJAGmzav5EUCZNttt+33Ql74whfOfDp7IPOk/T2BZ7eAANmA/Z8KkFe84hVd/v1wvP71r+/e//73b/YA+de//tX95S9/6e68887uP//5z6YzubbffvsuZ3Kllle96lULnw22SIvWchbWaaed1j355JObnjZLeSeffHL//5944onud7/7XffnP/+5e+CBB7qnn36622mnnfp6999/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gABpsWtqJkCAQAUCAqSCJiiBAAECLQoIkBa7pmYCBAhUICBAKmiCEggQINCigABpsWtqJkCAQAUCAqSCJiiBAAECLQoIkBa7pmYCBAhUICBAKmiCEggQINCigABpsWtqJkCAQAUCAqSCJiiBAAECLQoIkBa7pmYCBAhUICBAKmiCEggQINCigABpsWtqJkCAQAUCAqSCJiiBAAECLQoIkBa7pmYCBAhUICBAKmiCEggQINCigABpsWtqJkCAQAUCAqSCJiiBAAECLQoIkBa7pmYCBAhUICBAKmiCEggQINCigABpsWtqJkCAQAUCAqSCJiiBAAECLQoIkBa7pmYCBAhUICBAKmiCEggQINCigABpsWtqJkCAQAUCAqSCJiiBAAECLQoIkBa7pmYCBAhUICBAKmiCEggQINCigABpsWtqJkCAQAUCAqSCJiiBAAECLQoIkBa7pmYCBAhUICBAKmiCEggQINCigABpsWtqJkCAQAUCAqSCJiiBAAECLQoIkBa7pmYCBAhUICBAKmiCEggQINCigABpsWtqJkCAQAUCAqSCJiiBAAECLQoIkBa7pmYCBAhUICBAKmiCEggQINCigABpsWtqJkCAQAUCAqSCJiiBAAECLQoIkBa7pmYCBAhUICBAKmiCEggQINCigABpsWtqJkCAQAUCAqSCJiiBAAECLQoIkBa7pmYCBAhUICBAKmiCEggQINCigABpsWtqJkCAQAUCAqSCJiiBAAECLQoIkBa7pmYCBAhUICBAKmiCEggQINCigABpsWtqJkCAQAUCAqSCJiiBAAECLQoIkBa7pmYCBAhUICBAKmiCEggQINCigABpsWtqJkCAQAUCAqSCJiiBAAECLQoIkBa7pmYCBAhUICBAKmiCEggQINCigABpsWtqJkCAQAUCAqSCJiiBAAECLQoIkBa7pmYCBAhUICBAKmiCEggQINCigABpsWtqJkCAQAUCAqSCJiiBAAECLQoIkBa7pmYCBAhUICBAKmiCEggQINCigABpsWtqJkCAQAUCAqSCJiiBAAECLQoIkBa7pmYCBAhUICBAKmiCEggQINCigABpsWtqJkCAQAUCAqSCJiiBAAECLQoIkBa7pmYCBAhUICBAKmiCEggQINCigABpsWtqJkCAQAUCAqSCJiiBAAECLQoIkBa7pmYCBAhUICBAKmiCEggQINCigABpsWtqJkCAQAUCAqSCJiiBAAECLQoIkBa7pmYCBAhUICBAKmiCEggQINCigABpsWtqJkCAQAUCAqSCJiiBAAECLQoIkBa7pmYCBAhUICBAKmiCEggQINCigABpsWtqJkCAQAUCAqSCJiiBAAECLQoIkBa7pmYCBAhUICBAKmiCEggQINCigABpsWtqJkCAQAUCAqSCJiiBAAECLQoIkBa7pmYCBAhUICBAKmiCEggQINCigABpsWtqJkCAQAUCAqSCJiiBAAECLQoIkBa7pmYCBAhUICBAKmiCEggQINCigABpsWtqJkCAQAUCAqSCJiiBAAECLQoIkBa7pmYCBAhUIPB/CncY5d+ZegQAAAAASUVORK5CYII="
+            width="700" height="600" alt="Product image">
         {% endif %}
+    </div>
+    <div>
+        <article style="position: sticky; top: 20px">
+            <header>
+                <h1>{{ product.name }}</h1>
+                <p><strong>Категорія:</strong>
+                    {% if product.fishingrod %}Вудлище
+                    {% elif product.reel %}Котушка
+                    {% else %}Загальне спорядження{% endif %}
+                </p>
+                <p><strong>Продавець:</strong> {{ product.seller.display_name }}</p>
+            </header>
 
-        <p>{{ product.description }}</p>
 
-        <section>
-            <h3>Характеристики</h3>
-            <ul>
-                <li><strong>Ціна:</strong> ${{ product.price }}</li>
-                <li><strong>Наявність:</strong> 
-                    {% if product.stock > 0 %}
+
+            <p>{{ product.description }}</p>
+
+            <section>
+                <h3>Характеристики</h3>
+                <ul>
+                    <li><strong>Ціна:</strong> {{ product.price }} грн</li>
+                    <li><strong>Наявність:</strong>
+                        {% if product.stock > 0 %}
                         <mark>{{ product.stock }} од. у наявності</mark>
-                    {% else %}
+                        {% else %}
                         <span style="color: red;">Немає в наявності</span>
-                    {% endif %}
-                </li>
+                        {% endif %}
+                    </li>
 
-                {% if product.fishingrod %}
+                    {% if product.fishingrod %}
                     <li><strong>Довжина:</strong> {{ product.fishingrod.length }} м</li>
-                    <li><strong>Тест:</strong> {{ product.fishingrod.test_min }}г - {{ product.fishingrod.test_max }}г</li>
+                    <li><strong>Тест:</strong> {{ product.fishingrod.test_min }}г - {{ product.fishingrod.test_max }}г
+                    </li>
                     <li><strong>Матеріал:</strong> {{ product.fishingrod.material }}</li>
-                {% elif product.reel %}
+                    {% elif product.reel %}
                     <li><strong>Розмір шпулі:</strong> {{ product.reel.spool_size }}</li>
                     <li><strong>Передавальне число:</strong> {{ product.reel.gear_ratio }}</li>
                     <li><strong>Підшипники:</strong> {{ product.reel.bearings_count }}</li>
-                {% endif %}
-            </ul>
-        </section>
+                    {% endif %}
+                </ul>
+            </section>
 
-        <footer>
-            {% if product.is_available and not user.is_admin_member %}
+            <footer>
+                {% if product.is_available and not user.is_admin_member %}
                 <form action="{% url 'store:cart_add' product.id %}" method="post">
-                    {% csrf_token %}
-                    <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}" style="width: 70px; display: inline-block;">
-                    <button type="submit">Додати в кошик</button>
+                    <fieldset class="grid">
+                        {% csrf_token %}
+                        <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}">
+                        <input type="submit" value="Додати в кошик" />
+                    </fieldset>
                 </form>
-            {% else %}
+                {% else %}
                 <button disabled>Недоступно для покупки</button>
                 {% if product.stock == 0 %}
-                    <p><small>Товару немає на складі, але ви можете ознайомитися з характеристиками.</small></p>
+                <p><small>Товару немає на складі, але ви можете ознайомитися з характеристиками.</small></p>
                 {% endif %}
-            {% endif %}
-            <a href="{% url 'store:product_list' %}">Назад до каталогу</a>
-        </footer>
-    </article>
-</section>
+                {% endif %}
+                <a href="{% url 'store:product_list' %}">Назад до каталогу</a>
+            </footer>
+        </article>
+    </div>
+</div>
 {% endblock %}

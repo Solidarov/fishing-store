@@ -3,7 +3,7 @@
 {% block title %}Оформлення замовлення{% endblock %}
 
 {% block content %}
-<section>
+<div class="container" style="max-width: 800px;">
     <header>
         <h1>Оформлення замовлення</h1>
         <p>Будь ласка, введіть адресу доставки.</p>
@@ -14,14 +14,31 @@
             {% csrf_token %}
             <fieldset>
                 <legend>Дані для замовлення</legend>
-                {{ form.as_p }}
+                {% for field in form %}
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}
+                {% for error in field.errors %}
+                <small style="color: red;">{{ error }}</small>
+                {% endfor %}
+                {% endif %}
+                {% endfor %}
+
+                {% if form.non_field_errors %}
+                {% for error in form.non_field_errors %}
+                <p role="alert">{{ error }}</p>
+                {% endfor %}
+                {% endif %}
             </fieldset>
-            
-            <footer>
-                <a href="{% url 'store:cart_detail' %}" role="button" class="secondary">Повернутись до кошика</a>
-                <button type="submit">Підтвердити замовлення</button>
-            </footer>
+
+            <div class="grid">
+                <div class="grid">
+                    <input type="button" value="Повернутись до кошика" class="secondary"
+                        onclick="location.href='{% url 'store:cart_detail' %}'" />
+                    <input type="submit" value="Підтвердити замовлення" />
+                </div>
+            </div>
         </form>
     </article>
-</section>
+</div>
 {% endblock %}

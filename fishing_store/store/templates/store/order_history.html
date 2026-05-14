@@ -10,18 +10,19 @@
 
 <section>
     {% if orders %}
-        {% for order in orders %}
-        <article style="border: 1px solid #ddd; padding: 20px; margin-bottom: 30px; border-radius: 8px;">
-            <header>
-                <h3>Замовлення №{{ order.id }} ({{ order.status }})</h3>
-                <p><small>Оформлено: {{ order.created_at|date:"d.m.Y H:i" }}</small></p>
-            </header>
-
+    {% for order in orders %}
+    <details style="border: 1px solid #ddd; padding: 20px; margin-bottom: 30px; border-radius: 8px;">
+        <summary>
+            <h3>Замовлення №{{ order.id }} ({{ order.status }})</h3>
+            <p><small>Оформлено: {{ order.created_at|date:"d.m.Y H:i" }}</small></p>
+        </summary>
+        <hr />
+        <div>
             <div>
                 <strong>Загальна сума: {{ order.effective_price }} грн.</strong><br>
-                <small>(Загальна сума на момент замовлення: {{ order.total_price }} грн)</small>
+                <small>(На момент замовлення: {{ order.total_price }} грн)</small>
             </div>
-            
+
             <div style="margin-top: 15px;">
                 <strong>Дані замовника:</strong><br>
                 {{ order.first_name }} {{ order.last_name }}<br>
@@ -30,20 +31,21 @@
 
             <div style="margin-top: 15px;">
                 <strong>Адреса доставки:</strong><br>
-                {{ order.postal_code }}, {{ order.region }} обл., м. {{ order.city }}, {{ order.street }}, буд. {{ order.house_num }}{% if order.flat_num %}, кв. {{ order.flat_num }}{% endif %}
+                {{ order.postal_code }}, {{ order.region }} обл., м. {{ order.city }}, {{ order.street }}, буд. {{
+                order.house_num }}{% if order.flat_num %}, кв. {{ order.flat_num }}{% endif %}
             </div>
 
             <hr>
 
             <h4>Підзамовлення (по продавцях):</h4>
             {% for sub_order in order.sub_orders.all %}
-            <div style="background: #f9f9f9; padding: 15px; margin-bottom: 10px; border-radius: 5px; border-left: 5px solid 
-                {% if sub_order.status == 'PENDING' %} #ffcc00
-                {% elif sub_order.status == 'SENT' %}#007bff
-                {% elif sub_order.status == 'COMPLETED' %} #28a745
-                {% elif sub_order.status == 'CANCELED' %}#dc3545
-                {% endif %};">
-                
+            <div style="border: 1px solid #ddd; padding: 15px; margin-bottom: 10px; border-radius: 5px; border-left: 5px solid 
+                    {% if sub_order.status == 'PENDING' %} #ffcc00
+                    {% elif sub_order.status == 'SENT' %}#007bff
+                    {% elif sub_order.status == 'COMPLETED' %} #28a745
+                    {% elif sub_order.status == 'CANCELED' %}#dc3545
+                    {% endif %};">
+
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div>
                         <strong>Статус: {{ sub_order.get_status_display }}</strong><br>
@@ -58,7 +60,7 @@
                     <summary>Список товарів ({{ sub_order.items.count }})</summary>
                     <ul>
                         {% for item in sub_order.items.all %}
-                            <li>{{ item.product_name }} — {{ item.quantity }} шт. x {{ item.price }} грн.</li>
+                        <li>{{ item.product_name }} — {{ item.quantity }} шт. x {{ item.price }} грн.</li>
                         {% endfor %}
                     </ul>
                 </details>
@@ -66,17 +68,19 @@
             {% endfor %}
 
             {% if order.can_be_canceled %}
-                <footer style="margin-top: 20px;">
-                    <form action="{% url 'store:cancel_order' order.id %}" method="post" onsubmit="return confirm('Ви впевнені, що хочете скасувати доступні частини замовлення?');">
-                        {% csrf_token %}
-                        <button type="submit" class="contrast">Скасувати замовлення</button>
-                    </form>
-                </footer>
+            <footer style="margin-top: 20px;">
+                <form action="{% url 'store:cancel_order' order.id %}" method="post"
+                    onsubmit="return confirm('Ви впевнені, що хочете скасувати доступні частини замовлення?');">
+                    {% csrf_token %}
+                    <button type="submit" class="contrast">Скасувати замовлення</button>
+                </form>
+            </footer>
             {% endif %}
-        </article>
-        {% endfor %}
+        </div>
+    </details>
+    {% endfor %}
     {% else %}
-        <p>Ви ще не робили замовлень. <a href="{% url 'store:product_list' %}">Повернутися до магазину</a>.</p>
+    <p>Ви ще не робили замовлень. <a href="{% url 'store:product_list' %}">Повернутися до магазину</a>.</p>
     {% endif %}
 </section>
 {% endblock %}

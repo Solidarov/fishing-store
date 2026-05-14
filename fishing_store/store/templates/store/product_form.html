@@ -1,17 +1,32 @@
 {% extends "base.html" %}
 
 {% block content %}
-<section>
+<section class="container" style="max-width: 800px;">
     <header>
         <h2>{{ title }}</h2>
     </header>
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
-        {{ form.as_p }}
-        <footer>
-            <button type="submit">Зберегти</button>
-            <a href="{% url 'store:seller_dashboard' %}">Скасувати</a>
-        </footer>
+        {% for field in form %}
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}
+        {% for error in field.errors %}
+        <small style="color: red;">{{ error }}</small>
+        {% endfor %}
+        {% endif %}
+        {% endfor %}
+
+        {% if form.non_field_errors %}
+        {% for error in form.non_field_errors %}
+        <p role="alert">{{ error }}</p>
+        {% endfor %}
+        {% endif %}
+        <div class="grid">
+            <input type="button" value="Скасувати" class="secondary"
+                onclick="location.href='{% url 'store:seller_dashboard' %}'" </a>
+            <input type="submit" value="Зберегти" />
+        </div>
     </form>
 </section>
 {% endblock %}

@@ -23,8 +23,11 @@ services:
       - db
     env_file:
       - .env
+    volumes:
+      - media:/app/fishing_store/media
 
 
 volumes:
   db_data:
     external: true
+  media:

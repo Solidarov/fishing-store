@@ -43,6 +43,8 @@ class CheckoutView(LoginRequiredMixin, UserPassesTestMixin, FormView):
 
         if profile:
             return {
+                "first_name": profile.first_name,
+                "last_name": profile.last_name,
                 "phone_number": profile.phone_number,
                 "region": profile.region,
                 "city": profile.city,

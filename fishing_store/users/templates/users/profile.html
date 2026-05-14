@@ -1,36 +1,40 @@
 {% extends "base.html" %}
-
 {% block content %}
-    <h2>Мій профіль ({{ user.get_role_display }})</h2>
-    <p>Статус: {% if user.is_active %}Активний{% else %}Неактивний{% endif %}</p>
-    
+<h2>Мій профіль ({{ user.get_role_display }})</h2>
+<p>Статус: {% if user.is_active %}Активний{% else %}Неактивний{% endif %}</p>
+<div class="grid">
     <section>
         <h3>Інформація про акаунт</h3>
         <p><strong>Ім'я користувача:</strong> {{ user.username }}</p>
-        <p><strong>Email:</strong> {{ user.email|default:"Не вказано" }}</p>
-        
+        <p><strong>Email:</strong> {{ user.email|default:"-" }}</p>
+        <div style="width: 75%;">
+            <form action=" {% url 'users:profile_delete' %}" method="post"
+                onsubmit="return confirm('Ви впевнені, що хочете видалити свій акаунт? Ваші дані будуть приховані, а ви будете розлогінені.');">
+                {% csrf_token %}
+                <fieldset class="grid">
+                    <input type="button" value="Редагувати профіль" class="primary"
+                        onclick="location.href='{% url 'users:profile_edit' %}'" />
+                    <input type="submit" value="Видалити акаунт" style="border-color: red; background-color: red;" />
+                </fieldset>
+            </form>
+        </div>
+    </section>
+    <section>
         {% if profile %}
-            <h3>Деталі профілю</h3>
-            {% if user.role == "SELLER" %}
-                <p><strong>Назва магазину:</strong> {{ profile.store_name|default:"Не вказано" }}</p>
-            {% endif %}
-            <p><strong>Ім'я:</strong> {{ profile.first_name|default:"Не вказано" }}</p>
-            <p><strong>Прізвище:</strong> {{ profile.last_name|default:"Не вказано" }}</p>
-            <p><strong>Номер телефону:</strong> {{ profile.phone_number|default:"Не вказано" }}</p>
-            <p><strong>Область:</strong> {{ profile.region|default:"Не вказано" }}</p>
-            <p><strong>Місто:</strong> {{ profile.city|default:"Не вказано" }}</p>
-            <p><strong>Вулиця:</strong> {{ profile.street|default:"Не вказано" }}</p>
-            <p><strong>Будинок:</strong> {{ profile.house_num|default:"-" }}, <strong>Квартира:</strong> {{ profile.flat_num|default:"-" }}</p>
-            <p><strong>Поштовий індекс:</strong> {{ profile.postal_code|default:"Не вказано" }}</p>
+        <h3>Деталі профілю</h3>
+        {% if user.role == "SELLER" %}
+        <p><strong>Назва магазину:</strong> {{ profile.store_name|default:"-" }}</p>
+        {% endif %}
+        <p><strong>Ім'я:</strong> {{ profile.first_name|default:"-" }}</p>
+        <p><strong>Прізвище:</strong> {{ profile.last_name|default:"-" }}</p>
+        <p><strong>Номер телефону:</strong> {{ profile.phone_number|default:"-" }}</p>
+        <p><strong>Область:</strong> {{ profile.region|default:"-" }}</p>
+        <p><strong>Місто:</strong> {{ profile.city|default:"-" }}</p>
+        <p><strong>Вулиця:</strong> {{ profile.street|default:"-" }}</p>
+        <p><strong>Будинок:</strong> {{ profile.house_num|default:"-" }}, <strong>Квартира:</strong>
+            {{profile.flat_num|default:"-" }}</p>
+        <p><strong>Поштовий індекс:</strong> {{ profile.postal_code|default:"-" }}</p>
         {% endif %}
     </section>
-
-    <div style="display: flex; gap: 10px; margin-top: 20px;">
-        <a href="{% url 'users:profile_edit' %}" class="button">Редагувати профіль</a>
-        
-        <form action="{% url 'users:profile_delete' %}" method="post" onsubmit="return confirm('Ви впевнені, що хочете видалити свій акаунт? Ваші дані будуть приховані, а ви будете розлогінені.');">
-            {% csrf_token %}
-            <button type="submit" style="background-color: #ff4444; border-color: #ff4444; color: white;">Видалити акаунт</button>
-        </form>
-    </div>
+</div>
 {% endblock %}

@@ -1,50 +1,65 @@
 {% extends "base.html" %}
 
 {% block content %}
+<style>
+    .product-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--pico-grid-column-gap, 1rem);
+    }
+</style>
 <section>
     <header>
         <h2>Каталог товарів</h2>
         <p>Досліджуйте наш широкий асортимент рибальського спорядження.</p>
     </header>
-
-    <details open>
-        <summary>Пошук та фільтри</summary>
-        <form method="get" style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end; margin-bottom: 2rem;">
-            {% for field in filter_form %}
-                <div style="flex: 1 1 200px;">
-                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                    {{ field }}
-                </div>
-            {% endfor %}
-            <div style="flex: 0 0 auto;">
-                <button type="submit">Застосувати</button>
-                <a href="{% url 'store:product_list' %}" class="button secondary">Скинути</a>
-            </div>
-        </form>
-    </details>
-
-    <div style="display: flex; flex-wrap: wrap; gap: 20px;">
-        {% for product in products %}
-            <aside style="flex: 1 1 300px; border: 1px solid #ddd; padding: 15px; border-radius: 8px;">
-                {% if product.image %}
-                    <img src="{{ product.image.url }}" alt="{{ product.name }}" style="max-width: 100%; border-radius: 4px;">
-                {% endif %}
-                <h3>{{ product.name }}</h3>
-                <p><small>Продавець: <strong>{{ product.seller.display_name }}</strong></small></p>
-                <p>{{ product.description|truncatewords:20 }}</p>
-                <p><strong>Price: ${{ product.price }}</strong></p>
-                
-                {% if product.stock > 0 %}
-                    <p><mark>In Stock: {{ product.stock }}</mark></p>
-                {% else %}
-                    <p style="color: red;">Out of Stock</p>
-                {% endif %}
-
-                <a href="{% url 'store:product_detail' product.id %}">View Details</a>
+    <div class="grid" style="grid-template-columns: 30% 70%; margin-top: 20px;">
+        <div>
+            <aside style="position: sticky; top: 20px">
+                <form method="get">
+                    {% for field in filter_form %}
+                    <div>
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                    </div>
+                    {% endfor %}
+                    <div>
+                        <button type="submit">Застосувати</button>
+                        <a href="{% url 'store:product_list' %}" class="button secondary">Скинути</a>
+                    </div>
+                </form>
             </aside>
-        {% empty %}
-            <p>No products found in our catalog yet.</p>
-        {% endfor %}
+        </div>
+
+        <div class="product-grid">
+            {% for product in products %}
+            <article class="product-card">
+                {% if product.image %}
+                <div>
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}"
+                        style="max-height: 40%; margin-bottom:10px">
+                </div>
+                {% endif %}
+                <div>
+                    <h3>{{ product.name }}</h3>
+                    <p><small>Продавець: <strong>{{ product.seller.display_name }}</strong></small></p>
+                    <p>{{ product.description|truncatechars:20 }}</p>
+                    <p><strong>Ціна: {{ product.price }} грн</strong></p>
+
+                    {% if product.stock > 0 %}
+                    <p><mark>В наявності: {{ product.stock }}</mark></p>
+                    {% else %}
+                    <p style="color: red;">Немає в наявності</p>
+                    {% endif %}
+
+                    <a href="{% url 'store:product_detail' product.id %}">Детальніше</a>
+                </div>
+            </article>
+            {% empty %}
+            <p>Каталог порожній.</p>
+            {% endfor %}
+
+        </div>
     </div>
 </section>
 {% endblock %}

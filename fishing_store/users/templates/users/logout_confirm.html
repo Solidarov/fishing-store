@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<article>
+    <header>
+        <h3>Вихід із системи</h3>
+    </header>
+
+    <p>Ви впевнені, що хочете вийти зі свого акаунту?</p>
+
+    <div>
+        <form action="{% url 'users:logout' %}" method="post">
+            <fieldset class="grid">
+                {% csrf_token %}
+                <input type="submit" value="Так, вийти" style="color: red; border-color: red;" class="outline" />
+                <input type="button" value="Скасувати" class="outline secondary"
+                    onclick="location.href='{% url 'store:product_list' %}'" />
+            </fieldset>
+        </form>
+    </div>
+</article>
+{% endblock %}

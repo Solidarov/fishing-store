@@ -1,21 +1,54 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h2>Редагування профілю ({{ user.get_role_display }})</h2>
-    
-    <form method="post">
-        {% csrf_token %}
-        <h3>Інформація про акаунт</h3>
-        {{ user_form.as_p }}
-        
-        {% if profile_form %}
-            <h3>Деталі профілю</h3>
-            {{ profile_form.as_p }}
-        {% endif %}
-        
-        <div style="display: flex; gap: 10px;">
-            <button type="submit">Зберегти зміни</button>
-            <a href="{% url 'users:profile' %}" class="button">Скасувати</a>
+<h2>Редагування профілю ({{ user.get_role_display }})</h2>
+<form method="post">
+    {% csrf_token %}
+    <fieldset class="grid">
+        <div>
+            <h3>Інформація про акаунт</h3>
+            <!-- {{ user_form.as_p }} -->
+            {% for field in user_form %}
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}
+            {% for error in field.errors %}
+            <small style="color: red;">{{ error }}</small>
+            {% endfor %}
+            {% endif %}
+            {% endfor %}
+
+            {% if user_form.non_field_errors %}
+            {% for error in user_form.non_field_errors %}
+            <p role="alert">{{ error }}</p>
+            {% endfor %}
+            {% endif %}
+            <div class="grid" style="margin-top: 40px;">
+                <input type="submit" value="Зберегти зміни" />
+                <input type="button" value="Скасувати" class="secondary"
+                    onclick="location.href='{% url 'users:profile' %}'" />
+            </div>
         </div>
-    </form>
+        {% if profile_form %}
+        <div>
+            <h3>Деталі профілю</h3>
+            {% for field in profile_form %}
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}
+            {% for error in field.errors %}
+            <small style="color: red;">{{ error }}</small>
+            {% endfor %}
+            {% endif %}
+            {% endfor %}
+
+            {% if profile_form.non_field_errors %}
+            {% for error in user_form.non_field_errors %}
+            <p role="alert">{{ error }}</p>
+            {% endfor %}
+            {% endif %}
+        </div>
+        {% endif %}
+        </div>
+</form>
 {% endblock %}
