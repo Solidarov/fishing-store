@@ -19,13 +19,10 @@
             {% endfor %}
 
             {% if user_form.non_field_errors %}
-            {% for error in form.non_field_errors %}
+            {% for error in user_form.non_field_errors %}
             <p role="alert">{{ error }}</p>
             {% endfor %}
             {% endif %}
-            <!-- <input type="submit" value="Так, вийти" style="color: red; border-color: red;" class="outline" />
-            <input type="button" value="Скасувати" class="outline secondary"
-                onclick="location.href='{% url 'store:product_list' %}'" /> -->
             <div class="grid" style="margin-top: 40px;">
                 <input type="submit" value="Зберегти зміни" />
                 <input type="button" value="Скасувати" class="secondary"
@@ -46,11 +43,10 @@
             {% endfor %}
 
             {% if profile_form.non_field_errors %}
-            {% for error in form.non_field_errors %}
+            {% for error in user_form.non_field_errors %}
             <p role="alert">{{ error }}</p>
             {% endfor %}
             {% endif %}
-            <!-- {{ profile_form.as_p }} -->
         </div>
         {% endif %}
         </div>
