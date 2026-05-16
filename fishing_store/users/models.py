@@ -146,12 +146,12 @@ class BaseProfile(models.Model):
         null=True,
         verbose_name="Назва вулиці",
     )
-    house_num = models.PositiveSmallIntegerField(
+    house_num = models.CharField(
         blank=True,
         null=True,
         verbose_name="Номер будинку",
     )
-    flat_num = models.PositiveSmallIntegerField(
+    flat_num = models.CharField(
         blank=True,
         null=True,
         verbose_name="Номер квартири",
