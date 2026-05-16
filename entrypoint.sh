@@ -24,5 +24,8 @@ python manage.py createsuperuser --no-input 2>/dev/null || echo "    Superuser a
 echo "Seeds the database with initial test data..."
 python manage.py seed_db
 
+echo "Collect static files..."
+python manage.py collectstatic
+
 echo "Start server..."
 python manage.py runserver 0.0.0.0:8000
