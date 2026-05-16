@@ -154,7 +154,7 @@ class SubOrder(models.Model):
 
     def can_change_status(self):
         """Перевіряє, чи можна загалом змінити статус"""
-        return self.can_mark_sent() or self.can_mark_sent() or self.can_cancel()
+        return self.can_mark_sent() or self.can_mark_completed() or self.can_cancel()
 
     def mark_sent(self):
         """Змінює статус на 'Відправлено'."""
